@@ -61,7 +61,7 @@ class DataHandlerHook {
      * @return void
      */
     public function processDatamap_preProcessFieldArray(&$incomingFieldArray, $table, $id, DataHandler &$tcemain) {
-        if ($this->TYPO3Service->needsSequencer($table)) {
+        if (strpos($id, 'NEW') !== FALSE && $this->TYPO3Service->needsSequencer($table)) {
             $newId = $this->TYPO3Service->getSequencerService()->getNextIdForTable($table);
             if ($newId) {
                 $incomingFieldArray['uid'] = $newId;

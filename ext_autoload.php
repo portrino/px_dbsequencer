@@ -4,4 +4,3 @@ return array(
     'Portrino\DbSequencer\Service\TYPO3Service' => $extensionPath . 'Classes/Service/TYPO3Service.php',
     'Portrino\DbSequencer\Service\SequencerService' => $extensionPath . 'Classes/Service/SequencerService.php'
 );
-?>

@@ -79,10 +79,7 @@ class TYPO3Service {
 	 * @return boolean
 	 */
 	public function needsSequencer($tableName) {
-		if (in_array($tableName, $this->supportedTables)) {
-			return TRUE;
-		}
-		return FALSE;
+		return in_array($tableName, $this->supportedTables);
 	}
 
     /**

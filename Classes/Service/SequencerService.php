@@ -51,11 +51,6 @@ class SequencerService {
     private $defaultOffset = 1;
 
     /**
-     * @var integer
-     */
-    private $checkInterval = 120;
-
-    /**
      * Sets the default start
      *
      * @param int $defaultStart
@@ -79,12 +74,12 @@ class SequencerService {
      *
      * @param string $table
      * @param int $depth
-     * @throws Exception
+     * @throws \Exception
      * @return int
      */
     public function getNextIdForTable($table, $depth = 0) {
         if ($depth > 10) {
-            throw new Exception('The sequencer cannot return IDs for this table -' . $table . ' Too many recursions - maybe to much load?' );
+            throw new \Exception('The sequencer cannot return IDs for this table -' . $table . ' Too many recursions - maybe to much load?' );
         }
         $where = 'table_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, $this->sequenceTable);
         $row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', $this->sequenceTable, $where);
@@ -92,30 +87,22 @@ class SequencerService {
         if (!$row || !isset($row['current'])) {
             $this->initSequencerForTable($table);
             return $this->getNextIdForTable($table, ++$depth);
-        } elseif ($row['timestamp'] + $this->checkInterval < $GLOBALS['EXEC_TIME']) {
-            $defaultStartValue = $this->getDefaultStartValue($table);
-            $isValueOutdated = ($row['current'] < $defaultStartValue);
-            $isOffsetChanged = ($row['offset'] != $this->defaultOffset);
-            $isStartChanged = ($row['current'] % $this->defaultOffset != $this->defaultStart);
-            if ($isValueOutdated || $isOffsetChanged || $isStartChanged) {
-                $row['current'] = $defaultStartValue;
+        } else {
+            $sequencedStartValue = $this->getSequencedStartValue($table);
+            $isValueOutdated = ($row['current'] < $sequencedStartValue);
+            if ($isValueOutdated) {
+                $row['current'] = $sequencedStartValue;
+
+                $where = 'timestamp=' . (int)$row['timestamp'] . ' AND table_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, $this->sequenceTable);
+                $fieldValues = array(
+                    'current' => $row['current'],
+                    'timestamp' => $GLOBALS['EXEC_TIME']
+                );
+                $GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->sequenceTable, $where, $fieldValues);
+                return $this->getNextIdForTable($table, ++$depth);
             }
         }
-
-        $new = $row['current'] + $row['offset'];
-        $updateTimeStamp = $GLOBALS['EXEC_TIME'];
-
-        $where = 'timestamp=' . (int)$row['timestamp'] . ' AND table_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, $this->sequenceTable);
-        $fieldValues = array(
-            'current' => $new,
-            'timestamp' => $updateTimeStamp
-        );
-        $res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->sequenceTable, $where, $fieldValues);
-        if ($res && $GLOBALS['TYPO3_DB']->sql_affected_rows() > 0) {
-            return $new;
-        } else {
-            return $this->getNextIdForTable($table, ++$depth);
-        }
+        return $row['current'];
     }
 
     /**
@@ -125,7 +112,7 @@ class SequencerService {
      * @return void
      */
     private function initSequencerForTable($table) {
-        $start = $this->getDefaultStartValue($table);
+        $start = $this->getSequencedStartValue($table);
         $fieldValues =  array(
             'table_name' => $table,
             'current' => $start,
@@ -142,11 +129,10 @@ class SequencerService {
      * @param integer
      * @return int
      */
-    private function getDefaultStartValue($table) {
+    private function getSequencedStartValue($table) {
         $select = 'max(uid) as max';
         $where = '1=1';
-        $row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow($select, $table, $where);
-        $currentMax = $row['max'] + 1;
+        $currentMax = (int)current($GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow($select, $table, $where));
         $start = $this->defaultStart + ($this->defaultOffset * ceil ($currentMax / $this->defaultOffset));
         return $start;
     }
