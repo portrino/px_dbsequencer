@@ -1,5 +1,5 @@
 <?php
-namespace Portrino\DbSequencer\Service;
+namespace Portrino\PxDbsequencer\Service;
 
 /***************************************************************
  *  Copyright notice

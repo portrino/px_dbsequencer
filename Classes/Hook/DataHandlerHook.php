@@ -1,5 +1,5 @@
 <?php
-namespace Portrino\DbSequencer\Hook;
+namespace Portrino\PxDbsequencer\Hook;
 
 /***************************************************************
  *  Copyright notice
@@ -26,9 +26,7 @@ namespace Portrino\DbSequencer\Hook;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-
-use Portrino\DbSequencer\Service;
-use TYPO3\CMS\Core\DataHandling\DataHandler;
+use Portrino\PxDbsequencer\Service;
 
 /**
  * DataHandlerHook
@@ -57,15 +55,15 @@ class DataHandlerHook {
      * @param array $incomingFieldArray
      * @param string $table
      * @param int $id
-     * @param DataHandler $tcemain
+     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $pObj
      * @return void
      */
-    public function processDatamap_preProcessFieldArray(&$incomingFieldArray, $table, $id, DataHandler &$tcemain) {
+    public function processDatamap_preProcessFieldArray(&$incomingFieldArray, $table, $id, &$pObj) {
         if (strpos($id, 'NEW') !== FALSE && $this->TYPO3Service->needsSequencer($table)) {
             $newId = $this->TYPO3Service->getSequencerService()->getNextIdForTable($table);
             if ($newId) {
                 $incomingFieldArray['uid'] = $newId;
-                $tcemain->suggestedInsertUids[$table . ':' . $newId] = TRUE;
+                $pObj->suggestedInsertUids[$table . ':' . $newId] = TRUE;
             }
         }
     }
