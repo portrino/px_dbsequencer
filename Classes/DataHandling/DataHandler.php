@@ -419,4 +419,75 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler {
         }
     }
 
+
+
+    /**
+     * Insert into database
+     * Does not check permissions but expects them to be verified on beforehand
+     *
+     * @param string $table Record table name
+     * @param string $id "NEW...." uid string
+     * @param array $fieldArray Array of field=>value pairs to insert. FIELDS MUST MATCH the database FIELDS. No check is done. "pid" must point to the destination of the record!
+     * @param boolean $newVersion Set to TRUE if new version is created.
+     * @param integer $suggestedUid Suggested UID value for the inserted record. See the array $this->suggestedInsertUids; Admin-only feature
+     * @param boolean $dontSetNewIdIndex If TRUE, the ->substNEWwithIDs array is not updated. Only useful in very rare circumstances!
+     * @return integer Returns ID on success.
+     * @todo Define visibility
+     */
+    public function insertDB($table, $id, $fieldArray, $newVersion = FALSE, $suggestedUid = 0, $dontSetNewIdIndex = FALSE) {
+        if (is_array($fieldArray) && is_array($GLOBALS['TCA'][$table]) && isset($fieldArray['pid'])) {
+            // Do NOT insert the UID field, ever!
+            unset($fieldArray['uid']);
+            if (count($fieldArray)) {
+                // Check for "suggestedUid".
+                // This feature is used by the import functionality to force a new record to have a certain UID value.
+                // This is only recommended for use when the destination server is a passive mirrow of another server.
+                // As a security measure this feature is available only for Admin Users (for now)
+                // PxDbSequencer: enable for non admins, to use sequencing for all BE Users
+                $suggestedUid = (int)$suggestedUid;
+                if ($suggestedUid && $this->suggestedInsertUids[$table . ':' . $suggestedUid]) {
+                    // When the value of ->suggestedInsertUids[...] is "DELETE" it will try to remove the previous record
+                    if ($this->suggestedInsertUids[$table . ':' . $suggestedUid] === 'DELETE') {
+                        // DELETE:
+                        $GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'uid=' . (int)$suggestedUid);
+                    }
+                    $fieldArray['uid'] = $suggestedUid;
+                }
+                $fieldArray = $this->insertUpdateDB_preprocessBasedOnFieldType($table, $fieldArray);
+                // Execute the INSERT query:
+                $GLOBALS['TYPO3_DB']->exec_INSERTquery($table, $fieldArray);
+                // If succees, do...:
+                if (!$GLOBALS['TYPO3_DB']->sql_error()) {
+                    // Set mapping for NEW... -> real uid:
+                    // the NEW_id now holds the 'NEW....' -id
+                    $NEW_id = $id;
+                    $id = $GLOBALS['TYPO3_DB']->sql_insert_id();
+                    if (!$dontSetNewIdIndex) {
+                        $this->substNEWwithIDs[$NEW_id] = $id;
+                        $this->substNEWwithIDs_table[$NEW_id] = $table;
+                    }
+                    // Checking the record is properly saved and writing to log
+                    if ($this->checkStoredRecords) {
+                        $newRow = $this->checkStoredRecord($table, $id, $fieldArray, 1);
+                    }
+                    // Update reference index:
+                    $this->updateRefIndex($table, $id);
+                    if ($newVersion) {
+                        $propArr = $this->getRecordPropertiesFromRow($table, $newRow);
+                        $this->log($table, $id, 1, 0, 0, 'New version created of table \'%s\', uid \'%s\'. UID of new version is \'%s\'', 10, array($table, $fieldArray['t3ver_oid'], $id), $propArr['event_pid'], $NEW_id);
+                    } else {
+                        $propArr = $this->getRecordPropertiesFromRow($table, $newRow);
+                        $page_propArr = $this->getRecordProperties('pages', $propArr['pid']);
+                        $this->log($table, $id, 1, 0, 0, 'Record \'%s\' (%s) was inserted on page \'%s\' (%s)', 10, array($propArr['header'], $table . ':' . $id, $page_propArr['header'], $newRow['pid']), $newRow['pid'], $NEW_id);
+                        // Clear cache for relavant pages:
+                        $this->registerRecordIdForPageCacheClearing($table, $id);
+                    }
+                    return $id;
+                } else {
+                    $this->log($table, $id, 1, 0, 2, 'SQL error: \'%s\' (%s)', 12, array($GLOBALS['TYPO3_DB']->sql_error(), $table . ':' . $id));
+                }
+            }
+        }
+    }
+
 }
