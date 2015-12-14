@@ -1,0 +1,16 @@
+{
+  "name": "portrino/px_dbsequencer",
+  "type": "typo3-cms-extension",
+  "description": "",
+  "homepage": "http://typo3.org",
+  "license": ["GPL-2.0+"],
+  "version": "0.5.1",
+  "autoload": {
+    "psr-4": {
+      "Portrino\\PxDbsequencer\\": "Classes"
+    }
+  },
+  "replace": {
+    "px_dbsequencer": "*"
+  }
+}
