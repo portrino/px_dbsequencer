@@ -1,5 +1,10 @@
 # PxDbsequencer Change log
 
+0.5.2 - 2015-12-15
+------------------
+
+* fix dependencies in ext_emconf
+
 0.5.1 - 2015-12-14
 ------------------
 
