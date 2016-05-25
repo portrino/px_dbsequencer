@@ -4,7 +4,7 @@ namespace Portrino\PxDbsequencer\Hook;
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2014 Andre Wuttig <wuttig@portrino.de>, portrino GmbH
+ *  (c) 2016 Andre Wuttig <wuttig@portrino.de>, portrino GmbH
  *           Axel Boeswetter <boeswetter@portrino.de>, portrino GmbH
  *           Thomas Griessbach <griessbach@portrino.de>, portrino GmbH
  *
@@ -26,13 +26,13 @@ namespace Portrino\PxDbsequencer\Hook;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
 use Portrino\PxDbsequencer\Service;
 
 /**
- * DataHandlerHook
+ * Class DataHandlerHook
  *
- * @package px_dbsequencer
- * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
+ * @package Portrino\PxDbsequencer\Hook
  */
 class DataHandlerHook {
     /**

@@ -4,7 +4,7 @@ namespace Portrino\PxDbsequencer\Service;
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2014 Andre Wuttig <wuttig@portrino.de>, portrino GmbH
+ *  (c) 2016 Andre Wuttig <wuttig@portrino.de>, portrino GmbH
  *           Axel Boeswetter <boeswetter@portrino.de>, portrino GmbH
  *           Thomas Griessbach <griessbach@portrino.de>, portrino GmbH
  *
@@ -28,10 +28,9 @@ namespace Portrino\PxDbsequencer\Service;
  ***************************************************************/
 
 /**
- * SequenzerService is used to generate system wide independent IDs
+ * Class SequencerService
  *
- * @package px_dbsequencer
- * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
+ * @package Portrino\PxDbsequencer\Service
  */
 class SequencerService {
 

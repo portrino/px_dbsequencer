@@ -1,19 +1,45 @@
 {
-  "name": "portrino/px_dbsequencer",
-  "type": "typo3-cms-extension",
-  "description": "",
-  "homepage": "http://typo3.org",
-  "license": ["GPL-2.0+"],
-  "version": "0.5.2",
-  "require": {
-    "typo3/cms-core": ">=6.2.0,<8.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Portrino\\PxDbsequencer\\": "Classes"
+    "name": "portrino/px_dbsequencer",
+    "description": "With this extension you can ensure different unique keys for the configured tables (e.g.: pages, pages_language_overlay, tt_content)",
+    "version": "0.6.0",
+    "type": "typo3-cms-extension",
+    "keywords": [
+        "TYPO3",
+        "CMS",
+        "Sequencer",
+        "typo3",
+        "portrino"
+    ],
+    "homepage": "http://www.portrino.de",
+    "license": [
+        "GPL-2.0+"
+    ],
+    "authors": [
+        {
+            "name": "Andre Wuttig",
+            "email": "wuttig@portrino.de",
+            "homepage": "http://www.portrino.de",
+            "role": "Developer"
+        },
+        {
+            "name": "Axel Boeswetter",
+            "email": "boeswetter@portrino.de",
+            "homepage": "http://www.portrino.de",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "dev@portrino.de",
+        "issues": "https://forge.typo3.org/projects/extension-px_dbsequencer/issues",
+        "source": "http://qm.portrino.de/svn/portrino/typo3-extensions/company/px_dbsequencer"
+    },
+    "autoload": {
+        "psr-4": {
+            "Portrino\\PxDbsequencer\\": "Classes"
+        }
+    },
+    "replace": {
+        "px_dbsequencer": "*"
     }
-  },
-  "replace": {
-    "px_dbsequencer": "*"
-  }
 }
+

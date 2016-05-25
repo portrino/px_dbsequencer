@@ -1,5 +1,11 @@
 # PxDbsequencer Change log
 
+0.6.0 - 2016-05-25
+------------------
+* adds boot method to `ext_localconf.php`
+* replaces className syntax with new `::class` syntax
+* adds 
+
 0.5.2 - 2015-12-15
 ------------------
 
