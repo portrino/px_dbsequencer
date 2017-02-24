@@ -1,5 +1,9 @@
 # PxDbsequencer Change log
 
+0.6.1 - 2017-02-24
+------------------
+* [BUGFIX] add use statement for ArrayUtility in DataHandler
+
 0.6.0 - 2016-05-25
 ------------------
 * adds boot method to `ext_localconf.php`
