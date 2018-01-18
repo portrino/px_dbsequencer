@@ -1,5 +1,10 @@
 # PxDbsequencer Change log
 
+0.7.0 - 2018-01-18
+------------------
+* [TASK] updates DataHandler to TYPO3 8.7
+* [TASK] updates ext_emconf with TYPO3 8.7 dependency
+
 0.6.1 - 2017-02-24
 ------------------
 * [BUGFIX] add use statement for ArrayUtility in DataHandler
