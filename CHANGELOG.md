@@ -4,6 +4,7 @@
 ------------------
 * [TASK] updates DataHandler to TYPO3 8.7
 * [TASK] updates ext_emconf with TYPO3 8.7 dependency
+* [TASK] updates license in composer.json for packagist compatibility
 
 0.6.1 - 2017-02-24
 ------------------
