@@ -27,9 +27,11 @@ namespace Portrino\PxDbsequencer\DataHandling;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
+use Doctrine\DBAL\DBALException;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\QueryHelper;
 use TYPO3\CMS\Core\DataHandling\Localization\DataMapProcessor;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -194,12 +196,17 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         $recordAccess = $this->checkRecordInsertAccess($table, $theRealPid);
                         if ($recordAccess) {
                             $this->addDefaultPermittedLanguageIfNotSet($table, $incomingFieldArray);
-                            $recordAccess = $this->BE_USER->recordEditAccessInternals($table, $incomingFieldArray,
-                                true);
+                            $recordAccess = $this->BE_USER->recordEditAccessInternals(
+                                $table,
+                                $incomingFieldArray,
+                                true
+                            );
                             if (!$recordAccess) {
                                 if ($this->enableLogging) {
-                                    $this->newlog('recordEditAccessInternals() check failed. [' . $this->BE_USER->errorMsg . ']',
-                                        1);
+                                    $this->newlog(
+                                        'recordEditAccessInternals() check failed. [' . $this->BE_USER->errorMsg . ']',
+                                        1
+                                    );
                                 }
                             } elseif (!$this->bypassWorkspaceRestrictions) {
                                 // Workspace related processing:
@@ -208,8 +215,10 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                     if ($res < 0) {
                                         $recordAccess = false;
                                         if ($this->enableLogging) {
-                                            $this->newlog('Stage for versioning root point and users access level did not allow for editing',
-                                                1);
+                                            $this->newlog(
+                                                'Stage for versioning root point and users access level did not allow for editing',
+                                                1
+                                            );
                                         }
                                     }
                                 } else {
@@ -219,8 +228,10 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                     } else {
                                         $recordAccess = false;
                                         if ($this->enableLogging) {
-                                            $this->newlog('Record could not be created in this workspace in this branch',
-                                                1);
+                                            $this->newlog(
+                                                'Record could not be created in this workspace in this branch',
+                                                1
+                                            );
                                         }
                                     }
                                 }
@@ -248,8 +259,10 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     $recordAccess = $this->BE_USER->recordEditAccessInternals($table, $id);
                     if (!$recordAccess) {
                         if ($this->enableLogging) {
-                            $this->newlog('recordEditAccessInternals() check failed. [' . $this->BE_USER->errorMsg . ']',
-                                1);
+                            $this->newlog(
+                                'recordEditAccessInternals() check failed. [' . $this->BE_USER->errorMsg . ']',
+                                1
+                            );
                         }
                     } else {
                         // Here we fetch the PID of the record that we point to...
@@ -301,26 +314,31 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                             $this->autoVersionIdMap[$origTable][$origId] = $newId;
                                         }
                                     }
-                                    ArrayUtility::mergeRecursiveWithOverrule($this->RTEmagic_copyIndex,
-                                        $tce->RTEmagic_copyIndex);
+                                    ArrayUtility::mergeRecursiveWithOverrule(
+                                        $this->RTEmagic_copyIndex,
+                                        $tce->RTEmagic_copyIndex
+                                    );
                                     // See where RTEmagic_copyIndex is used inside fillInFieldArray() for more information...
                                     // Update registerDBList, that holds the copied relations to child records:
                                     $registerDBList = array_merge($registerDBList, $tce->registerDBList);
                                     // For the reason that creating a new version of this record, automatically
                                     // created related child records (e.g. "IRRE"), update the accordant field:
-                                    $this->getVersionizedIncomingFieldArray($table, $id, $incomingFieldArray,
-                                        $registerDBList);
+                                    $this->getVersionizedIncomingFieldArray($table, $id, $incomingFieldArray, $registerDBList);
                                     // Use the new id of the copied/versionized record:
                                     $id = $this->autoVersionIdMap[$table][$id];
                                     $recordAccess = true;
                                     $this->autoVersioningUpdate = true;
                                 } elseif ($this->enableLogging) {
-                                    $this->newlog('Could not be edited in offline workspace in the branch where found (failure state: \'' . $errorCode . '\'). Auto-creation of version failed!',
-                                        1);
+                                    $this->newlog(
+                                        'Could not be edited in offline workspace in the branch where found (failure state: \'' . $errorCode . '\'). Auto-creation of version failed!',
+                                        1
+                                    );
                                 }
                             } elseif ($this->enableLogging) {
-                                $this->newlog('Could not be edited in offline workspace in the branch where found (failure state: \'' . $errorCode . '\'). Auto-creation of version not allowed in workspace!',
-                                    1);
+                                $this->newlog(
+                                    'Could not be edited in offline workspace in the branch where found (failure state: \'' . $errorCode . '\'). Auto-creation of version not allowed in workspace!',
+                                    1
+                                );
                             }
                         }
                     }
@@ -354,8 +372,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 // NOTICE: This overriding is potentially dangerous; permissions per field is not checked!!!
                 $fieldArray = $this->overrideFieldArray($table, $fieldArray);
                 if ($createNewVersion) {
-                    $newVersion_placeholderFieldArray = $this->overrideFieldArray($table,
-                        $newVersion_placeholderFieldArray);
+                    $newVersion_placeholderFieldArray = $this->overrideFieldArray($table, $newVersion_placeholderFieldArray);
                 }
                 // Setting system fields
                 if ($status === 'new') {
@@ -498,8 +515,14 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
      * @param bool $dontSetNewIdIndex If TRUE, the ->substNEWwithIDs array is not updated. Only useful in very rare circumstances!
      * @return int|null Returns ID on success.
      */
-    public function insertDB($table, $id, $fieldArray, $newVersion = false, $suggestedUid = 0, $dontSetNewIdIndex = false)
-    {
+    public function insertDB(
+        $table,
+        $id,
+        $fieldArray,
+        $newVersion = false,
+        $suggestedUid = 0,
+        $dontSetNewIdIndex = false
+    ) {
         if (is_array($fieldArray) && is_array($GLOBALS['TCA'][$table]) && isset($fieldArray['pid'])) {
             // Do NOT insert the UID field, ever!
             unset($fieldArray['uid']);
@@ -527,6 +550,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 ) {
                     $typeArray[$GLOBALS['TCA'][$table]['ctrl']['transOrigDiffSourceField']] = Connection::PARAM_LOB;
                 }
+                /** @var Connection $connection */
                 $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($table);
                 $insertErrorMessage = '';
                 try {
@@ -565,13 +589,17 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     if ($newVersion) {
                         if ($this->enableLogging) {
                             $propArr = $this->getRecordPropertiesFromRow($table, $newRow);
-                            $this->log($table, $id, 1, 0, 0, 'New version created of table \'%s\', uid \'%s\'. UID of new version is \'%s\'', 10, [$table, $fieldArray['t3ver_oid'], $id], $propArr['event_pid'], $NEW_id);
+                            $this->log($table, $id, 1, 0, 0,
+                                'New version created of table \'%s\', uid \'%s\'. UID of new version is \'%s\'', 10,
+                                [$table, $fieldArray['t3ver_oid'], $id], $propArr['event_pid'], $NEW_id);
                         }
                     } else {
                         if ($this->enableLogging) {
                             $propArr = $this->getRecordPropertiesFromRow($table, $newRow);
                             $page_propArr = $this->getRecordProperties('pages', $propArr['pid']);
-                            $this->log($table, $id, 1, 0, 0, 'Record \'%s\' (%s) was inserted on page \'%s\' (%s)', 10, [$propArr['header'], $table . ':' . $id, $page_propArr['header'], $newRow['pid']], $newRow['pid'], $NEW_id);
+                            $this->log($table, $id, 1, 0, 0, 'Record \'%s\' (%s) was inserted on page \'%s\' (%s)', 10,
+                                [$propArr['header'], $table . ':' . $id, $page_propArr['header'], $newRow['pid']],
+                                $newRow['pid'], $NEW_id);
                         }
                         // Clear cache for relevant pages:
                         $this->registerRecordIdForPageCacheClearing($table, $id);
@@ -579,7 +607,8 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     return $id;
                 }
                 if ($this->enableLogging) {
-                    $this->log($table, $id, 1, 0, 2, 'SQL error: \'%s\' (%s)', 12, [$insertErrorMessage, $table . ':' . $id]);
+                    $this->log($table, $id, 1, 0, 2, 'SQL error: \'%s\' (%s)', 12,
+                        [$insertErrorMessage, $table . ':' . $id]);
                 }
             }
         }
