@@ -1,5 +1,11 @@
 # PxDbsequencer Change log
 
+0.8.0 - 2019-01-02
+------------------
+* [TASK] updates DataHandler to TYPO3 9.5
+* [TASK] replace $GLOBALS['TYPO3_DB'] with doctrine connections
+* [TASK] updates ext_emconf with TYPO3 9.5 dependency
+
 0.7.0 - 2018-01-18
 ------------------
 * [TASK] updates DataHandler to TYPO3 8.7

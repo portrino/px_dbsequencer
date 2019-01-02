@@ -43,7 +43,7 @@ class DataHandlerHook {
     /**
      * Constructor
      *
-     * @return DataHandlerHook
+     * @return void
      */
     public function __construct() {
         $this->TYPO3Service = new Service\TYPO3Service(new Service\SequencerService());
@@ -57,6 +57,7 @@ class DataHandlerHook {
      * @param int $id
      * @param \TYPO3\CMS\Core\DataHandling\DataHandler $pObj
      * @return void
+     * @throws \Exception
      */
     public function processDatamap_preProcessFieldArray(&$incomingFieldArray, $table, $id, &$pObj) {
         if (strpos($id, 'NEW') !== FALSE && $this->TYPO3Service->needsSequencer($table)) {
