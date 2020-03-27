@@ -29,6 +29,7 @@ namespace Portrino\PxDbsequencer\DataHandling;
  ***************************************************************/
 
 use Doctrine\DBAL\DBALException;
+use Portrino\PxDbsequencer\Hook\DataHandlerHook;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -46,6 +47,13 @@ use TYPO3\CMS\Core\Versioning\VersionState;
  */
 class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
 {
+
+    /**
+     * if > 0 will be used in insertDB()
+     *
+     * @var int
+     */
+    protected $currentSuggestUid = 0;
 
     /*********************************************
      *
@@ -133,7 +141,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 $this->autoVersioningUpdate = false;
                 // Is it a new record? (Then Id is a string)
                 if (!MathUtility::canBeInterpretedAsInteger($id)) {
-                    // Get a fieldArray with default values
+                    // Get a fieldArray with tca default values
                     $fieldArray = $this->newFieldArray($table);
                     // A pid must be set for new records.
                     if (isset($incomingFieldArray['pid'])) {
@@ -220,7 +228,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     } else {
                         // Here we fetch the PID of the record that we point to...
                         $tempdata = $this->recordInfo($table, $id, 'pid' . (!empty($GLOBALS['TCA'][$table]['ctrl']['versioningWS']) ? ',t3ver_wsid,t3ver_stage' : ''));
-                        $theRealPid = $tempdata['pid'];
+                        $theRealPid = $tempdata['pid'] ?? null;
                         // Use the new id of the versionized record we're trying to write to:
                         // (This record is a child record of a parent and has already been versionized.)
                         if (!empty($this->autoVersionIdMap[$table][$id])) {
@@ -368,7 +376,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                             $newVersion_placeholderFieldArray['t3ver_wsid'] = $this->BE_USER->workspace;
                             $newVersion_placeholderFieldArray[$GLOBALS['TCA'][$table]['ctrl']['label']] = $this->getPlaceholderTitleForTableLabel($table);
                             // Saving placeholder as 'original'
-                            $this->insertDB($table, $id, $newVersion_placeholderFieldArray, false, $incomingFieldArray['uid'] ?? 0);
+                            $this->insertDB($table, $id, $newVersion_placeholderFieldArray, false, (int)($incomingFieldArray['uid'] ?? 0));
                             // For the actual new offline version, set versioning values to point to placeholder:
                             $fieldArray['pid'] = -1;
                             $fieldArray['t3ver_oid'] = $this->substNEWwithIDs[$id];
@@ -378,18 +386,15 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                             $fieldArray['t3ver_label'] = 'First draft version';
                             $fieldArray['t3ver_wsid'] = $this->BE_USER->workspace;
 
-                            // PxDbSequencer: Reset $incomingFieldArray['uid']
-                            $incomingFieldArray['uid'] = 0;
                             // PxDbSequencer: Re-call PxDbsequencer DataHandlerHook to generate a sequenced uid for the placeholder record, if needed
+                            /** @var DataHandlerHook $pxDbSequencerHookObj */
                             $pxDbSequencerHookObj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx_pxdbsequencer']);
-                            if (method_exists($pxDbSequencerHookObj, 'processDatamap_preProcessFieldArray')) {
-                                $pxDbSequencerHookObj->processDatamap_preProcessFieldArray($incomingFieldArray, $table, $id, $this);
+                            if (method_exists($pxDbSequencerHookObj, 'processDatamap_postProcessFieldArray')) {
+                                $pxDbSequencerHookObj->processDatamap_postProcessFieldArray($status, $table, $id, $fieldArray, $this);
                             }
 
                             // When inserted, $this->substNEWwithIDs[$id] will be changed to the uid of THIS version and so the interface will pick it up just nice!
-                            // PxDbSequencer: Call it with the additional $suggestedUid parameter
-                            $phShadowId = $this->insertDB($table, $id, $fieldArray, true, (int)$incomingFieldArray['uid'], true);
-
+                            $phShadowId = $this->insertDB($table, $id, $fieldArray, true, 0, true);
                             if ($phShadowId) {
                                 // Processes fields of the placeholder record:
                                 $this->triggerRemapAction($table, $id, [$this, 'placeholderShadowing'], [$table, $phShadowId]);
@@ -397,7 +402,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                 $this->autoVersionIdMap[$table][$this->substNEWwithIDs[$id]] = $phShadowId;
                             }
                         } else {
-                            $this->insertDB($table, $id, $fieldArray, false, $incomingFieldArray['uid']);
+                            $this->insertDB($table, $id, $fieldArray, false, (int)($incomingFieldArray['uid'] ?? 0));
                         }
                     } else {
                         if ($table === 'pages') {
@@ -458,8 +463,12 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 // This is only recommended for use when the destination server is a passive mirror of another server.
                 // As a security measure this feature is available only for Admin Users (for now)
                 $suggestedUid = (int)$suggestedUid;
-                // PxDbSequencer: enable for non admins, to use sequencing for all BE Users (hack: we add !$this->BE_USER->isAdmin())
-                if (($this->BE_USER->isAdmin() || !$this->BE_USER->isAdmin()) && $suggestedUid && $this->suggestedInsertUids[$table . ':' . $suggestedUid]) {
+                if (!$suggestedUid && $this->currentSuggestUid) {
+                    // PxDbSequencer: use uid from hook
+                    $suggestedUid = (int)$this->currentSuggestUid;
+                }
+                // PxDbSequencer: enable for non admins, to use sequencing for all BE Users: we remove $this->BE_USER->isAdmin()
+                if ($suggestedUid && $this->suggestedInsertUids[$table . ':' . $suggestedUid]) {
                     // When the value of ->suggestedInsertUids[...] is "DELETE" it will try to remove the previous record
                     if ($this->suggestedInsertUids[$table . ':' . $suggestedUid] === 'DELETE') {
                         // DELETE:
