@@ -3,6 +3,7 @@
 0.9.0 - 2020-03-27
 ------------------
 * [TASK] updates DataHandler for changes in TYPO3 9.5 and compatibility with fluidtypo3/flux
+* [TASK] updates composer.json to fix replace syntax
 
 0.8.0 - 2019-01-02
 ------------------
