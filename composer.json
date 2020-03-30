@@ -39,7 +39,8 @@
         }
     },
     "replace": {
-        "px_dbsequencer": "*"
+        "portrino/px_dbsequencer": "self.version",
+        "typo3-ter/px_dbsequencer": "self.version"
     }
 }
 

@@ -1,5 +1,9 @@
 # PxDbsequencer Change log
 
+0.6.2 - 2020-03-30
+------------------
+* [TASK] updates composer.json to fix replace syntax
+
 0.6.1 - 2017-02-24
 ------------------
 * [BUGFIX] add use statement for ArrayUtility in DataHandler
