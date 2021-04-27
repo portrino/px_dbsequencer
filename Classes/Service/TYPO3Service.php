@@ -61,7 +61,7 @@ class TYPO3Service {
     public function __construct(SequencerService $sequencer, $conf = NULL) {
 		$this->sequencerService = $sequencer;
 		if (is_null($conf)) {
-			$this->conf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['px_dbsequencer']);
+			$this->conf = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['px_dbsequencer'];
 		} else {
 			$this->conf = $conf;
 		}
