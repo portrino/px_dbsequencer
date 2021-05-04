@@ -9,7 +9,7 @@
         "typo3",
         "portrino"
     ],
-    "homepage": "http://www.portrino.de",
+    "homepage": "https://www.portrino.de",
     "license": [
         "GPL-2.0-or-later"
     ],
@@ -35,8 +35,8 @@
     ],
     "support": {
         "email": "dev@portrino.de",
-        "issues": "https://forge.typo3.org/projects/extension-px_dbsequencer/issues",
-        "source": "http://qm.portrino.de/svn/portrino/typo3-extensions/company/px_dbsequencer"
+        "issues": "https://github.com/portrino/px_dbsequencer/issues",
+        "source": "https://github.com/portrino/px_dbsequencer/"
     },
     "autoload": {
         "psr-4": {
@@ -46,6 +46,10 @@
     "replace": {
         "portrino/px_dbsequencer": "self.version",
         "typo3-ter/px_dbsequencer": "self.version"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "px_dbsequencer"
+        }
     }
 }
-

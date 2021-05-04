@@ -1,4 +1,8 @@
-# PxDbsequencer Change log
+# PxDbsequencer Changelog
+
+0.9.1 - 2021-05-04
+------------------
+* [TASK] updates composer.json
 
 0.9.0 - 2020-03-27
 ------------------
