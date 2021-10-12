@@ -5,14 +5,13 @@
     "keywords": [
         "TYPO3",
         "CMS",
-        "Sequencer",
-        "typo3",
+        "extension",
+        "database",
+        "sequencer",
         "portrino"
     ],
     "homepage": "https://www.portrino.de",
-    "license": [
-        "GPL-2.0-or-later"
-    ],
+    "license": "GPL-2.0-or-later",
     "authors": [
         {
             "name": "Andre Wuttig",
@@ -38,6 +37,12 @@
         "issues": "https://github.com/portrino/px_dbsequencer/issues",
         "source": "https://github.com/portrino/px_dbsequencer"
     },
+    "require": {
+        "typo3/cms-core": "^11.5"
+    },
+    "replace": {
+        "typo3-ter/px-dbsequencer": "self.version"
+    },
     "autoload": {
         "psr-4": {
             "Portrino\\PxDbsequencer\\": "Classes"
@@ -47,10 +52,5 @@
         "typo3/cms": {
             "extension-key": "px_dbsequencer"
         }
-    },
-    "replace": {
-        "portrino/px_dbsequencer": "self.version",
-        "typo3-ter/px_dbsequencer": "self.version"
     }
 }
-

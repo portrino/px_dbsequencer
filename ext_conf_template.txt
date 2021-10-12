@@ -1,5 +1,5 @@
 # cat=basic; type=input; label= Sequencer Tables
-tables = pages,pages_language_overlay,tt_content,sys_file,sys_filemounts,sys_file_collection,sys_file_metadata,sys_file_reference,sys_file_storage,sys_domain,sys_template
+tables = be_groups,be_users,pages,sys_category,sys_file,sys_filemounts,sys_file_collection,sys_file_metadata,sys_file_reference,sys_file_storage,sys_template,tt_address,tt_content,tx_scheduler_task,tx_scheduler_task_group
 
 # cat=basic; type=input; label= Table Offset (=number of systems)
 offset = 10
