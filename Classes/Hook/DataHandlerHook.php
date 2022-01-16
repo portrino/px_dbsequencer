@@ -28,6 +28,7 @@ namespace Portrino\PxDbsequencer\Hook;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+use Portrino\PxDbsequencer\DataHandling\DataHandler;
 use Portrino\PxDbsequencer\Service;
 
 /**
@@ -59,7 +60,7 @@ class DataHandlerHook
      * @param string $table
      * @param mixed $id
      * @param array $fieldArray
-     * @param \Portrino\PxDbsequencer\DataHandling\DataHandler $pObj
+     * @param DataHandler $pObj
      * @return void
      * @throws \Exception
      */

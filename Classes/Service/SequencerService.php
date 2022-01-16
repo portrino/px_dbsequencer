@@ -1,10 +1,6 @@
 <?php
 namespace Portrino\PxDbsequencer\Service;
 
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-
 /***************************************************************
  *  Copyright notice
  *
@@ -31,12 +27,17 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * Class SequencerService
  *
  * @package Portrino\PxDbsequencer\Service
  */
-class SequencerService {
+class SequencerService
+{
 
     /**
      * @var string
@@ -63,7 +64,6 @@ class SequencerService {
      */
     public function __construct()
     {
-
         $this->connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
     }
 
@@ -74,7 +74,8 @@ class SequencerService {
      * @param int $defaultStart
      * @return void
      */
-    public function setDefaultStart($defaultStart) {
+    public function setDefaultStart(int $defaultStart): void
+    {
         $this->defaultStart = $defaultStart;
     }
 
@@ -83,7 +84,8 @@ class SequencerService {
      *
      * @return int
      */
-    public function getDefaultStart() {
+    public function getDefaultStart(): int
+    {
         return $this->defaultStart;
     }
 
@@ -92,47 +94,51 @@ class SequencerService {
      *
      * @param string $table
      * @param int $depth
-     * @throws \Exception
      * @return int
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\DBAL\Driver\Exception
      */
-    public function getNextIdForTable($table, $depth = 0) {
+    public function getNextIdForTable(string $table, int $depth = 0): int
+    {
         if ($depth > 10) {
-            throw new \Exception('The sequencer cannot return IDs for this table -' . $table . ' Too many recursions - maybe to much load?' );
+            throw new \RuntimeException('The sequencer cannot return IDs for this table -' . $table . ' Too many recursions - maybe to much load?');
         }
 
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable($this->sequenceTable);
         $row = $queryBuilder->select('*')
-            ->from($this->sequenceTable)
-            ->where($queryBuilder->expr()->eq('table_name', $queryBuilder->createNamedParameter($table)))
-            ->execute()
-            ->fetch();
+                            ->from($this->sequenceTable)
+                            ->where(
+                                $queryBuilder->expr()->eq('table_name', $queryBuilder->createNamedParameter($table))
+                            )
+                            ->execute()
+                            ->fetchAssociative();
 
         if (!$row || !isset($row['current'])) {
             $this->initSequencerForTable($table);
             return $this->getNextIdForTable($table, ++$depth);
-        } else {
-            $sequencedStartValue = $this->getSequencedStartValue($table);
-            $isValueOutdated = ($row['current'] < $sequencedStartValue);
-            if ($isValueOutdated) {
-                $row['current'] = $sequencedStartValue;
+        }
 
-                $fieldValues = array(
-                    'current' => $row['current'],
-                    'timestamp' => $GLOBALS['EXEC_TIME']
-                );
+        $sequencedStartValue = $this->getSequencedStartValue($table);
+        $isValueOutdated = ($row['current'] < $sequencedStartValue);
+        if ($isValueOutdated) {
+            $row['current'] = $sequencedStartValue;
+
+            $fieldValues = array(
+                'current' => $row['current'],
+                'timestamp' => $GLOBALS['EXEC_TIME']
+            );
 
 //                $where = 'timestamp=' . (int)$row['timestamp'] . ' AND table_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, $this->sequenceTable);
-                $this->connectionPool->getConnectionForTable($this->sequenceTable)->update(
-                    $this->sequenceTable, // table
-                    $fieldValues, // value array
-                    [
-                        'table_name' => $table,
-                        'timestamp' => (int)$row['timestamp']
-                    ] // where
-                );
-                return $this->getNextIdForTable($table, ++$depth);
-            }
+            $this->connectionPool->getConnectionForTable($this->sequenceTable)->update(
+                $this->sequenceTable, // table
+                $fieldValues, // value array
+                [
+                    'table_name' => $table,
+                    'timestamp' => (int)$row['timestamp']
+                ] // where
+            );
+            return $this->getNextIdForTable($table, ++$depth);
         }
         return $row['current'];
     }
@@ -142,10 +148,13 @@ class SequencerService {
      *
      * @param string $table
      * @return void
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\DBAL\Driver\Exception
      */
-    private function initSequencerForTable($table) {
+    private function initSequencerForTable(string $table): void
+    {
         $start = $this->getSequencedStartValue($table);
-        $fieldValues =  array(
+        $fieldValues = array(
             'table_name' => $table,
             'current' => $start,
             'offset' => (int)$this->defaultOffset,
@@ -160,22 +169,23 @@ class SequencerService {
      * Returns the default start value for the given table
      *
      * @param string $table
-     * @param integer
      * @return int
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\DBAL\Driver\Exception
      */
-    private function getSequencedStartValue($table) {
+    private function getSequencedStartValue(string $table): int
+    {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable($table);
         $queryBuilder->getRestrictions()->removeAll();
         $currentMax = $queryBuilder->select('uid')
-            ->from($table)
-            ->orderBy('uid', 'DESC')
-            ->setMaxResults(1)
-            ->execute()
-            ->fetchColumn(0);
+                                   ->from($table)
+                                   ->orderBy('uid', 'DESC')
+                                   ->setMaxResults(1)
+                                   ->execute()
+                                   ->fetchOne();
 
-        $start = $this->defaultStart + ($this->defaultOffset * ceil ($currentMax / $this->defaultOffset));
-        return $start;
+        return $this->defaultStart + ($this->defaultOffset * ceil($currentMax / $this->defaultOffset));
     }
 
     /**
@@ -184,7 +194,8 @@ class SequencerService {
      * @param int $defaultOffset
      * @return void
      */
-    public function setDefaultOffset($defaultOffset) {
+    public function setDefaultOffset(int $defaultOffset): void
+    {
         $this->defaultOffset = $defaultOffset;
     }
 
@@ -193,8 +204,8 @@ class SequencerService {
      *
      * @return int
      */
-    public function getDefaultOffset() {
+    public function getDefaultOffset(): int
+    {
         return $this->defaultOffset;
     }
-
 }

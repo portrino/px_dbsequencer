@@ -28,7 +28,7 @@ namespace Portrino\PxDbsequencer\DataHandling;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DBALException;
 use Portrino\PxDbsequencer\Hook\DataHandlerHook;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\Connection;
@@ -356,7 +356,9 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                             $fieldArray['t3ver_state'] = (string)new VersionState(VersionState::NEW_PLACEHOLDER);
                             $fieldArray['t3ver_wsid'] = $this->BE_USER->workspace;
 
-                            // PxDbSequencer: Re-call PxDbsequencer DataHandlerHook to generate a sequenced uid for the placeholder record, if needed
+                            ###
+                            ### PxDbSequencer: Re-call PxDbsequencer DataHandlerHook to generate a sequenced uid for the placeholder record, if needed
+                            ###
                             /** @var DataHandlerHook $pxDbSequencerHookObj */
                             $pxDbSequencerHookObj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx_pxdbsequencer']);
                             if (method_exists($pxDbSequencerHookObj, 'processDatamap_postProcessFieldArray')) {
@@ -429,11 +431,15 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 // This is only recommended for use when the destination server is a passive mirror of another server.
                 // As a security measure this feature is available only for Admin Users (for now)
                 $suggestedUid = (int)$suggestedUid;
-                // PxDbSequencer: use uid from hook
+                ###
+                ### PxDbSequencer: use uid from hook
+                ###
                 if (!$suggestedUid && $this->currentSuggestUid) {
                     $suggestedUid = (int)$this->currentSuggestUid;
                 }
-                // PxDbSequencer: enable for non admins, to use sequencing for all BE Users: we remove $this->BE_USER->isAdmin()
+                ###
+                ### PxDbSequencer: enable for non admins, to use sequencing for all BE Users: we remove $this->BE_USER->isAdmin()
+                ###
                 if ($suggestedUid && $this->suggestedInsertUids[$table . ':' . $suggestedUid]) {
                     // When the value of ->suggestedInsertUids[...] is "DELETE" it will try to remove the previous record
                     if ($this->suggestedInsertUids[$table . ':' . $suggestedUid] === 'DELETE') {
@@ -457,7 +463,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         $fieldArray,
                         $typeArray
                     );
-                } catch (\Doctrine\DBAL\Exception $e) {
+                } catch (DBALException $e) {
                     $insertErrorMessage = $e->getPrevious()->getMessage();
                 }
                 // If succees, do...:

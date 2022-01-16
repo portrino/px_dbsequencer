@@ -34,52 +34,47 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  * @package Portrino\PxDbsequencer\Service
  */
-class TYPO3Service {
+class TYPO3Service
+{
 
-	/**
-	 * @var SequencerService
-	 */
-	private $sequencerService;
+    /**
+     * @var SequencerService
+     */
+    private $sequencerService;
 
-	/**
-	 * @var array
-	 */
-	private $conf;
-
-	/**
-	 * @var array Array of configured tables that should call the sequencer
-	 */
-	private $supportedTables;
+    /**
+     * @var array Array of configured tables that should call the sequencer
+     */
+    private $supportedTables;
 
     /**
      * Constructor
      *
      * @param SequencerService $sequencer
-     * @param array|NULL $conf
-     * @return TYPO3Service
+     * @param array|null $conf
      */
-    public function __construct(SequencerService $sequencer, $conf = NULL) {
-		$this->sequencerService = $sequencer;
-		if (is_null($conf)) {
-			$this->conf = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['px_dbsequencer'];
-		} else {
-			$this->conf = $conf;
-		}
+    public function __construct(SequencerService $sequencer, ?array $conf = null)
+    {
+        $this->sequencerService = $sequencer;
+        if (is_null($conf)) {
+            $conf = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['px_dbsequencer'];
+        }
 
-		$this->sequencerService->setDefaultOffset((int)$this->conf['offset']);
-		$this->sequencerService->setDefaultStart((int)$this->conf['system']);
-		$this->supportedTables = GeneralUtility::trimExplode(',', $this->conf['tables']);
-	}
+        $this->sequencerService->setDefaultOffset((int)$conf['offset']);
+        $this->sequencerService->setDefaultStart((int)$conf['system']);
+        $this->supportedTables = GeneralUtility::trimExplode(',', $conf['tables']);
+    }
 
-	/**
-	 * Returns, whether a table is configured to use the sequencer
-	 *
-	 * @param string $tableName
-	 * @return boolean
-	 */
-	public function needsSequencer($tableName) {
-		return in_array($tableName, $this->supportedTables);
-	}
+    /**
+     * Returns, whether a table is configured to use the sequencer
+     *
+     * @param string $tableName
+     * @return boolean
+     */
+    public function needsSequencer(string $tableName): bool
+    {
+        return in_array($tableName, $this->supportedTables);
+    }
 
     /**
      * Sets sequencer service
@@ -87,7 +82,8 @@ class TYPO3Service {
      * @param SequencerService $sequencerService
      * @return void
      */
-    public function setSequencerService($sequencerService) {
+    public function setSequencerService(SequencerService $sequencerService): void
+    {
         $this->sequencerService = $sequencerService;
     }
 
@@ -96,8 +92,8 @@ class TYPO3Service {
      *
      * @return SequencerService
      */
-    public function getSequencerService() {
+    public function getSequencerService(): SequencerService
+    {
         return $this->sequencerService;
     }
-
 }
