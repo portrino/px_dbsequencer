@@ -25,6 +25,12 @@
             "email": "boeswetter@portrino.de",
             "homepage": "http://www.portrino.de",
             "role": "Developer"
+        },
+        {
+            "name": "Thomas Griessbach",
+            "email": "griessbach@portrino.de",
+            "homepage": "http://www.portrino.de",
+            "role": "Developer"
         }
     ],
     "support": {
@@ -33,7 +39,7 @@
         "source": "https://github.com/portrino/px_dbsequencer/"
     },
     "require": {
-        "typo3/cms-core": "^7.6"
+        "typo3/cms-core": "^8.7"
     },
     "autoload": {
         "psr-4": {
