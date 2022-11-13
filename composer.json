@@ -39,7 +39,7 @@
         "source": "https://github.com/portrino/px_dbsequencer/"
     },
     "require": {
-        "typo3/cms-core": "^8.7"
+        "typo3/cms-core": "^9.5"
     },
     "autoload": {
         "psr-4": {
@@ -48,6 +48,10 @@
     },
     "replace": {
         "typo3-ter/px-dbsequencer": "self.version"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "px_dbsequencer"
+        }
     }
 }
-

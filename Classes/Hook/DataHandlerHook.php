@@ -1,4 +1,5 @@
 <?php
+
 namespace Portrino\PxDbsequencer\Hook;
 
 /***************************************************************
@@ -34,7 +35,8 @@ use Portrino\PxDbsequencer\Service;
  *
  * @package Portrino\PxDbsequencer\Hook
  */
-class DataHandlerHook {
+class DataHandlerHook
+{
     /**
      * @var Service\TYPO3Service
      */
@@ -43,27 +45,33 @@ class DataHandlerHook {
     /**
      * Constructor
      *
-     * @return DataHandlerHook
+     * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->TYPO3Service = new Service\TYPO3Service(new Service\SequencerService());
     }
 
     /**
      * Hook: processDatamap_preProcessFieldArray
      *
-     * @param array $incomingFieldArray
+     * @param string $status
      * @param string $table
-     * @param int $id
-     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $pObj
+     * @param mixed $id
+     * @param array $fieldArray
+     * @param \Portrino\PxDbsequencer\DataHandling\DataHandler $pObj
      * @return void
+     * @throws \Exception
      */
-    public function processDatamap_preProcessFieldArray(&$incomingFieldArray, $table, $id, &$pObj) {
-        if (strpos($id, 'NEW') !== FALSE && $this->TYPO3Service->needsSequencer($table)) {
+    public function processDatamap_postProcessFieldArray($status, $table, $id, &$fieldArray, &$pObj)
+    {
+        if (strpos($id, 'NEW') !== false && $this->TYPO3Service->needsSequencer($table)) {
             $newId = $this->TYPO3Service->getSequencerService()->getNextIdForTable($table);
             if ($newId) {
-                $incomingFieldArray['uid'] = $newId;
-                $pObj->suggestedInsertUids[$table . ':' . $newId] = TRUE;
+                $pObj->currentSuggestUid = $newId;
+                $pObj->suggestedInsertUids[$table . ':' . $newId] = true;
+            } else {
+                $pObj->currentSuggestUid = 0;
             }
         }
     }

@@ -1,6 +1,10 @@
 <?php
 namespace Portrino\PxDbsequencer\Service;
 
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /***************************************************************
  *  Copyright notice
  *
@@ -50,6 +54,21 @@ class SequencerService {
     private $defaultOffset = 1;
 
     /**
+     * @var ConnectionPool
+     */
+    private $connectionPool;
+
+    /**
+     * SequencerService constructor.
+     */
+    public function __construct()
+    {
+
+        $this->connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+    }
+
+
+    /**
      * Sets the default start
      *
      * @param int $defaultStart
@@ -80,8 +99,14 @@ class SequencerService {
         if ($depth > 10) {
             throw new \Exception('The sequencer cannot return IDs for this table -' . $table . ' Too many recursions - maybe to much load?' );
         }
-        $where = 'table_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, $this->sequenceTable);
-        $row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', $this->sequenceTable, $where);
+
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->connectionPool->getQueryBuilderForTable($this->sequenceTable);
+        $row = $queryBuilder->select('*')
+            ->from($this->sequenceTable)
+            ->where($queryBuilder->expr()->eq('table_name', $queryBuilder->createNamedParameter($table)))
+            ->execute()
+            ->fetch();
 
         if (!$row || !isset($row['current'])) {
             $this->initSequencerForTable($table);
@@ -92,12 +117,20 @@ class SequencerService {
             if ($isValueOutdated) {
                 $row['current'] = $sequencedStartValue;
 
-                $where = 'timestamp=' . (int)$row['timestamp'] . ' AND table_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, $this->sequenceTable);
                 $fieldValues = array(
                     'current' => $row['current'],
                     'timestamp' => $GLOBALS['EXEC_TIME']
                 );
-                $GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->sequenceTable, $where, $fieldValues);
+
+//                $where = 'timestamp=' . (int)$row['timestamp'] . ' AND table_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, $this->sequenceTable);
+                $this->connectionPool->getConnectionForTable($this->sequenceTable)->update(
+                    $this->sequenceTable, // table
+                    $fieldValues, // value array
+                    [
+                        'table_name' => $table,
+                        'timestamp' => (int)$row['timestamp']
+                    ] // where
+                );
                 return $this->getNextIdForTable($table, ++$depth);
             }
         }
@@ -118,7 +151,9 @@ class SequencerService {
             'offset' => (int)$this->defaultOffset,
             'timestamp' => $GLOBALS['EXEC_TIME']
         );
-        $GLOBALS['TYPO3_DB']->exec_INSERTquery($this->sequenceTable, $fieldValues);
+
+        $databaseConnectionForPages = $this->connectionPool->getConnectionForTable($this->sequenceTable);
+        $databaseConnectionForPages->insert($this->sequenceTable, $fieldValues);
     }
 
     /**
@@ -129,9 +164,16 @@ class SequencerService {
      * @return int
      */
     private function getSequencedStartValue($table) {
-        $select = 'max(uid) as max';
-        $where = '1=1';
-        $currentMax = (int)current($GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow($select, $table, $where));
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->connectionPool->getQueryBuilderForTable($table);
+        $queryBuilder->getRestrictions()->removeAll();
+        $currentMax = $queryBuilder->select('uid')
+            ->from($table)
+            ->orderBy('uid', 'DESC')
+            ->setMaxResults(1)
+            ->execute()
+            ->fetchColumn(0);
+
         $start = $this->defaultStart + ($this->defaultOffset * ceil ($currentMax / $this->defaultOffset));
         return $start;
     }
