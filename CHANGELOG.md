@@ -1,5 +1,9 @@
 # PxDbsequencer Changelog
 
+0.7.1 - 2022-11-13
+------------------
+* [TASK] updates composer.json -> updates typo3/cms-core version requirement
+
 0.6.3 - 2022-11-13
 ------------------
 * [TASK] updates composer.json -> fixes replace syntax again and adds typo3/cms-core requirement
