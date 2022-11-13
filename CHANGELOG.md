@@ -1,4 +1,9 @@
-# PxDbsequencer Change log
+# PxDbsequencer Changelog
+
+0.6.3 - 2022-11-13
+------------------
+* [TASK] updates composer.json -> fixes replace syntax again and adds typo3/cms-core requirement
+* [TASK] adds .gitignore
 
 0.6.2 - 2020-03-30
 ------------------
