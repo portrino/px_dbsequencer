@@ -1,7 +1,7 @@
 # TYPO3 extension `px_dbsequencer`
 
 [![Latest Stable Version](https://poser.pugx.org/portrino/px_dbsequencer/v/stable)](https://packagist.org/packages/portrino/px_dbsequencer)
-[![TYPO3 10](https://img.shields.io/badge/TYPO3-10-orange.svg)](https://get.typo3.org/version/10)
+[![TYPO3 11](https://img.shields.io/badge/TYPO3-11-orange.svg)](https://get.typo3.org/version/11)
 [![Total Downloads](https://poser.pugx.org/portrino/px_dbsequencer/downloads)](https://packagist.org/packages/portrino/px_dbsequencer)
 [![Monthly Downloads](https://poser.pugx.org/portrino/px_dbsequencer/d/monthly)](https://packagist.org/packages/portrino/px_dbsequencer)
 
@@ -106,12 +106,13 @@ switch ($applicationContext[0]) {
 
 ## 3 Compatibility
 
-| News   | TYPO3 | PHP       | Support / Development       |
-|--------|-------|-----------|-----------------------------|
-| 0.10.x | 10.4  | 7.2 - 7.4 | bugfixes, security updates  |
-| 0.9.x  | 9.5   | 7.2 - 7.4 | none                        |
-| 0.7.x  | 8.7   | 7.0 - 7.4 | none                        |
-| 0.6.x  | 7.6   | 5.5 - 7.3 | none                        |
+| News   | TYPO3 | PHP       | Support / Development                |
+|--------|-------|-----------|--------------------------------------|
+| 0.11.x | 11.5  | 7.4 - 8.1 | features, bugfixes, security updates |
+| 0.10.x | 10.4  | 7.2 - 7.4 | bugfixes, security updates           |
+| 0.9.x  | 9.5   | 7.2 - 7.4 | none                                 |
+| 0.7.x  | 8.7   | 7.0 - 7.4 | none                                 |
+| 0.6.x  | 7.6   | 5.5 - 7.3 | none                                 |
 
 ## 4 Authors
 
