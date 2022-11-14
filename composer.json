@@ -1,6 +1,6 @@
 {
     "name": "portrino/px_dbsequencer",
-    "description": "With this extension you can ensure different unique keys for the configured tables (e.g.: pages, pages_language_overlay, tt_content)",
+    "description": "With this extension you can ensure different unique keys for the configured tables (e.g.: pages, tt_content)",
     "type": "typo3-cms-extension",
     "keywords": [
         "TYPO3",
@@ -39,7 +39,7 @@
         "source": "https://github.com/portrino/px_dbsequencer/"
     },
     "require": {
-        "typo3/cms-core": "^9.5"
+        "typo3/cms-core": "^10.4"
     },
     "autoload": {
         "psr-4": {

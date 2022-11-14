@@ -1,5 +1,9 @@
 # PxDbsequencer Changelog
 
+0.10.2 - 2022-11-13
+------------------
+* [TASK] adds LICENSE and README
+
 0.9.2 - 2022-11-13
 ------------------
 * [TASK] updates composer.json -> updates typo3/cms-core version requirement
@@ -16,6 +20,18 @@
 0.9.1 - 2021-05-04
 ------------------
 * [TASK] updates composer.json
+
+0.10.1 - 2021-04-27
+-------------------
+* [BUGFIX] updates TYPO3Service constructor to use new $GLOBALS['TYPO3_CONF_VARS'] structure
+
+#### 2021-03-09
+* [CLEANUP] updates composer.json
+
+0.10.0 - 2020-06-16
+-------------------
+* [BUGFIX] changes DataHandler->currentSuggestUid to public to prevent exceptions in DataHandlerHook
+* [TASK] updates extension assets to v10 extension schema
 
 0.6.2 - 2020-03-30
 ------------------

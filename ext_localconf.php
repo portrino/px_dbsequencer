@@ -1,7 +1,8 @@
 <?php
 defined('TYPO3_MODE') || die();
 
-$boot = function ($_EXTKEY) {
+(function () {
+
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx_pxdbsequencer'] =
         \Portrino\PxDbsequencer\Hook\DataHandlerHook::class;
 
@@ -10,8 +11,5 @@ $boot = function ($_EXTKEY) {
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\DataHandling\DataHandler::class] = [
         'className' => \Portrino\PxDbsequencer\DataHandling\DataHandler::class
     ];
-};
-$boot($_EXTKEY);
-unset($boot);
 
-
+})();
