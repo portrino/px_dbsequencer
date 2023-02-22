@@ -1,12 +1,18 @@
 # PxDbsequencer Changelog
 
+#### 2023-02-22
+* [WIP][!!!] updates extension to be compatible with TYPO3 v12
+* [TASK] updates DataHandler XClass accordingly
+* [TASK] updates CHANGELOG and README
+* [CLEANUP] updates code formatting and migrates changes from parent objects/ overrides
+
 0.11.0 - 2022-11-13
 ------------------
 * [TASK] updates composer.json -> updates typo3/cms-core version requirement
 * [TASK] updates CHANGELOG and README
 
 #### 2022-01-16
-[CLEANUP] updates code formatting and migrates changes from parent objects/ overrides
+* [CLEANUP] updates code formatting and migrates changes from parent objects/ overrides
 
 #### 2021-10-12
 * [WIP][!!!] updates extension to be compatible with TYPO3 v11

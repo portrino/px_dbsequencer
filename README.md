@@ -46,10 +46,10 @@ module.
 After finishing the installation, head over to the extension settings and set the system identifier, the offset and the
 tables you'd like to sequence.
 
-The extension settings, like the system identifier, can also be configured depending on the current TYPO3_CONTEXT via 
-AdditionalConfiguration.php
+The extension settings, like the system identifier, can also be configured depending on the current `TYPO3_CONTEXT` via 
+`typo3conf/AdditionalConfiguration.php` (or `config/system/additional.php`)
 
-SO, a possible configuration in `LocalConfiguration.php` could look like:
+SO, a possible configuration in `typo3conf/LocalConfiguration.php` (or `config/system/settings.php`) could look like:
 
 ```
 return [
@@ -75,7 +75,7 @@ return [
 ];
 ```
 
-and in `AdditionalConfiguration.php` could be something like:
+and in `typo3conf/AdditionalConfiguration.php` (or `config/system/additional.php`) could be something like:
 
 ```
 // contextual environment settings
@@ -106,13 +106,14 @@ switch ($applicationContext[0]) {
 
 ## 3 Compatibility
 
-| News   | TYPO3 | PHP       | Support / Development                |
-|--------|-------|-----------|--------------------------------------|
-| 0.11.x | 11.5  | 7.4 - 8.1 | features, bugfixes, security updates |
-| 0.10.x | 10.4  | 7.2 - 7.4 | bugfixes, security updates           |
-| 0.9.x  | 9.5   | 7.2 - 7.4 | none                                 |
-| 0.7.x  | 8.7   | 7.0 - 7.4 | none                                 |
-| 0.6.x  | 7.6   | 5.5 - 7.3 | none                                 |
+| PxDbsequencer | TYPO3 | PHP       | Support / Development                |
+|---------------|-------|-----------|--------------------------------------|
+| dev-typo3-v12 | 12.x | 8.0 - 8.2 | features, bugfixes, security updates | 
+| 0.11.x        | 11.5  | 7.4 - 8.1 | features, bugfixes, security updates |
+| 0.10.x        | 10.4  | 7.2 - 7.4 | bugfixes, security updates           |
+| 0.9.x         | 9.5   | 7.2 - 7.4 | none                                 |
+| 0.7.x         | 8.7   | 7.0 - 7.4 | none                                 |
+| 0.6.x         | 7.6   | 5.5 - 7.3 | none                                 |
 
 ## 4 Authors
 

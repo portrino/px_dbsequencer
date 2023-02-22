@@ -1,40 +1,21 @@
 <?php
+
+/*
+ * This file is part of the package portrino/px_dbsequencer.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
 namespace Portrino\PxDbsequencer\Service;
 
-/***************************************************************
- *  Copyright notice
- *
- *  (c) 2016 Andre Wuttig <wuttig@portrino.de>, portrino GmbH
- *           Axel Boeswetter <boeswetter@portrino.de>, portrino GmbH
- *           Thomas Griessbach <griessbach@portrino.de>, portrino GmbH
- *
- *  All rights reserved
- *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
-
+use Doctrine\DBAL\Driver\Exception;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Class SequencerService
- *
- * @package Portrino\PxDbsequencer\Service
+ * SequencerService
  */
 class SequencerService
 {
@@ -95,8 +76,8 @@ class SequencerService
      * @param string $table
      * @param int $depth
      * @return int
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
      */
     public function getNextIdForTable(string $table, int $depth = 0): int
     {
@@ -111,7 +92,7 @@ class SequencerService
                             ->where(
                                 $queryBuilder->expr()->eq('table_name', $queryBuilder->createNamedParameter($table))
                             )
-                            ->execute()
+                            ->executeQuery()
                             ->fetchAssociative();
 
         if (!$row || !isset($row['current'])) {
@@ -124,19 +105,18 @@ class SequencerService
         if ($isValueOutdated) {
             $row['current'] = $sequencedStartValue;
 
-            $fieldValues = array(
+            $fieldValues = [
                 'current' => $row['current'],
                 'timestamp' => $GLOBALS['EXEC_TIME']
-            );
+            ];
 
-//                $where = 'timestamp=' . (int)$row['timestamp'] . ' AND table_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, $this->sequenceTable);
             $this->connectionPool->getConnectionForTable($this->sequenceTable)->update(
-                $this->sequenceTable, // table
-                $fieldValues, // value array
+                $this->sequenceTable,
+                $fieldValues,
                 [
                     'table_name' => $table,
                     'timestamp' => (int)$row['timestamp']
-                ] // where
+                ]
             );
             return $this->getNextIdForTable($table, ++$depth);
         }
@@ -148,18 +128,17 @@ class SequencerService
      *
      * @param string $table
      * @return void
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws Exception
      */
     private function initSequencerForTable(string $table): void
     {
         $start = $this->getSequencedStartValue($table);
-        $fieldValues = array(
+        $fieldValues = [
             'table_name' => $table,
             'current' => $start,
             'offset' => (int)$this->defaultOffset,
             'timestamp' => $GLOBALS['EXEC_TIME']
-        );
+        ];
 
         $databaseConnectionForPages = $this->connectionPool->getConnectionForTable($this->sequenceTable);
         $databaseConnectionForPages->insert($this->sequenceTable, $fieldValues);
@@ -170,8 +149,7 @@ class SequencerService
      *
      * @param string $table
      * @return int
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
      */
     private function getSequencedStartValue(string $table): int
     {
@@ -182,7 +160,7 @@ class SequencerService
                                    ->from($table)
                                    ->orderBy('uid', 'DESC')
                                    ->setMaxResults(1)
-                                   ->execute()
+                                   ->executeQuery()
                                    ->fetchOne();
 
         return $this->defaultStart + ($this->defaultOffset * ceil($currentMax / $this->defaultOffset));

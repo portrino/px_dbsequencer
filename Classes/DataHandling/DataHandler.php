@@ -1,32 +1,13 @@
 <?php
 
-namespace Portrino\PxDbsequencer\DataHandling;
+/*
+ * This file is part of the package portrino/px_dbsequencer.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
 
-/***************************************************************
- *  Copyright notice
- *
- *  (c) 2016 Andre Wuttig <wuttig@portrino.de>, portrino GmbH
- *           Axel Boeswetter <boeswetter@portrino.de>, portrino GmbH
- *           Thomas Griessbach <griessbach@portrino.de>, portrino GmbH
- *
- *  All rights reserved
- *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
+namespace Portrino\PxDbsequencer\DataHandling;
 
 use Doctrine\DBAL\Exception as DBALException;
 use Portrino\PxDbsequencer\Hook\DataHandlerHook;
@@ -42,9 +23,7 @@ use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
 
 /**
- * Class DataHandler
- *
- * @package Portrino\PxDbsequencer\DataHandling
+ * DataHandler
  */
 class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
 {
@@ -78,7 +57,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
         $this->datamap = $this->unsetElementsToBeDeleted($this->datamap);
         // Editing frozen:
         if ($this->BE_USER->workspace !== 0 && ($this->BE_USER->workspaceRec['freeze'] ?? false)) {
-            $this->log('sys_workspace', $this->BE_USER->workspace, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'All editing in this workspace has been frozen!');
+            $this->log('sys_workspace', $this->BE_USER->workspace, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'All editing in this workspace has been frozen');
             return false;
         }
         // First prepare user defined objects (if any) for hooks which extend this function:
@@ -109,7 +88,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
             //	   - permissions for tableaccess OK
             $modifyAccessList = $this->checkModifyAccessList($table);
             if (!$modifyAccessList) {
-                $this->log($table, 0, SystemLogDatabaseAction::UPDATE, 0, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify table \'%s\' without permission', 1, [$table]);
+                $this->log($table, 0, SystemLogDatabaseAction::UPDATE, 0, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify table "{table}" without permission', 1, ['table' => $table]);
             }
             if (!isset($GLOBALS['TCA'][$table]) || $this->tableReadOnly($table) || !is_array($this->datamap[$table]) || !$modifyAccessList) {
                 continue;
@@ -148,7 +127,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         // Checking and finding numerical pid, it may be a string-reference to another value
                         $canProceed = true;
                         // If a NEW... id
-                        if (strpos($pid_value, 'NEW') !== false) {
+                        if (str_contains($pid_value, 'NEW')) {
                             if ($pid_value[0] === '-') {
                                 $negFlag = -1;
                                 $pid_value = substr($pid_value, 1);
@@ -187,7 +166,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         $this->addDefaultPermittedLanguageIfNotSet($table, $incomingFieldArray, $theRealPid);
                         $recordAccess = $this->BE_USER->recordEditAccessInternals($table, $incomingFieldArray, true);
                         if (!$recordAccess) {
-                            $this->log($table, 0, SystemLogDatabaseAction::INSERT, 0, SystemLogErrorClassification::USER_ERROR, 'recordEditAccessInternals() check failed. [' . $this->BE_USER->errorMsg . ']');
+                            $this->log($table, 0, SystemLogDatabaseAction::INSERT, 0, SystemLogErrorClassification::USER_ERROR, 'recordEditAccessInternals() check failed [{reason}]', -1, ['reason' => $this->BE_USER->errorMsg]);
                         } elseif (!$this->bypassWorkspaceRestrictions && !$this->BE_USER->workspaceAllowsLiveEditingInTable($table)) {
                             // If LIVE records cannot be created due to workspace restrictions, prepare creation of placeholder-record
                             // So, if no live records were allowed in the current workspace, we have to create a new version of this record
@@ -209,17 +188,17 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     if (!$recordAccess) {
                         if ($this->enableLogging) {
                             $propArr = $this->getRecordProperties($table, $id);
-                            $this->log($table, $id, SystemLogDatabaseAction::UPDATE, 0, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record \'%s\' (%s) without permission. Or non-existing page.', 2, [$propArr['header'], $table . ':' . $id], $propArr['event_pid']);
+                            $this->log($table, $id, SystemLogDatabaseAction::UPDATE, 0, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record "{title}" ({table}:{uid}) without permission or non-existing page', 2, ['title' => $propArr['header'], 'table' => $table, 'uid' => $id], $propArr['event_pid']);
                         }
                         continue;
                     }
                     // Next check of the record permissions (internals)
                     $recordAccess = $this->BE_USER->recordEditAccessInternals($table, $id);
                     if (!$recordAccess) {
-                        $this->log($table, $id, SystemLogDatabaseAction::UPDATE, 0, SystemLogErrorClassification::USER_ERROR, 'recordEditAccessInternals() check failed. [' . $this->BE_USER->errorMsg . ']');
+                        $this->log($table, $id, SystemLogDatabaseAction::UPDATE, 0, SystemLogErrorClassification::USER_ERROR, 'recordEditAccessInternals() check failed [{reason}]', -1, ['reason' => $this->BE_USER->errorMsg]);
                     } else {
                         // Here we fetch the PID of the record that we point to...
-                        $tempdata = $this->recordInfo($table, $id, 'pid' . (BackendUtility::isTableWorkspaceEnabled($table) ? ',t3ver_oid,t3ver_wsid,t3ver_stage' : ''));
+                        $tempdata = $this->recordInfo($table, $id);
                         $theRealPid = $tempdata['pid'] ?? null;
                         // Use the new id of the versionized record we're trying to write to:
                         // (This record is a child record of a parent and has already been versionized.)
@@ -242,8 +221,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                 // new version of a record created in a workspace - so always refresh pagetree to indicate there is a change in the workspace
                                 $this->pagetreeNeedsRefresh = true;
 
-                                /** @var DataHandler $tce */
-                                $tce = GeneralUtility::makeInstance(__CLASS__, $this->referenceIndexUpdater);
+                                $tce = GeneralUtility::makeInstance(self::class, $this->referenceIndexUpdater);
                                 $tce->enableLogging = $this->enableLogging;
                                 // Setting up command for creating a new version of the record:
                                 $cmd = [];
@@ -271,10 +249,10 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                     $id = $this->autoVersionIdMap[$table][$id];
                                     $recordAccess = true;
                                 } else {
-                                    $this->log($table, $id, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'Could not be edited in offline workspace in the branch where found (failure state: \'' . $errorCode . '\'). Auto-creation of version failed!');
+                                    $this->log($table, $id, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'Could not be edited in offline workspace in the branch where found ({reason}). Auto-creation of version failed', -1, ['reason' => $errorCode]);
                                 }
                             } else {
-                                $this->log($table, $id, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'Could not be edited in offline workspace in the branch where found (failure state: \'' . $errorCode . '\'). Auto-creation of version not allowed in workspace!');
+                                $this->log($table, $id, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'Could not be edited in offline workspace in the branch where found ({reason}). Auto-creation of version not allowed in workspace', -1, ['reason' => $errorCode]);
                             }
                         }
                     }
@@ -316,9 +294,6 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 if ($status === 'new') {
                     if ($GLOBALS['TCA'][$table]['ctrl']['crdate'] ?? false) {
                         $fieldArray[$GLOBALS['TCA'][$table]['ctrl']['crdate']] = $GLOBALS['EXEC_TIME'];
-                    }
-                    if ($GLOBALS['TCA'][$table]['ctrl']['cruser_id'] ?? false) {
-                        $fieldArray[$GLOBALS['TCA'][$table]['ctrl']['cruser_id']] = $this->userid;
                     }
                 } elseif ($this->checkSimilar) {
                     // Removing fields which are equal to the current value:
@@ -448,21 +423,11 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     $fieldArray['uid'] = $suggestedUid;
                 }
                 $fieldArray = $this->insertUpdateDB_preprocessBasedOnFieldType($table, $fieldArray);
-                $typeArray = [];
-                if (!empty($GLOBALS['TCA'][$table]['ctrl']['transOrigDiffSourceField'])
-                    && array_key_exists($GLOBALS['TCA'][$table]['ctrl']['transOrigDiffSourceField'], $fieldArray)
-                ) {
-                    $typeArray[$GLOBALS['TCA'][$table]['ctrl']['transOrigDiffSourceField']] = Connection::PARAM_LOB;
-                }
                 $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($table);
                 $insertErrorMessage = '';
                 try {
                     // Execute the INSERT query:
-                    $connection->insert(
-                        $table,
-                        $fieldArray,
-                        $typeArray
-                    );
+                    $connection->insert($table, $fieldArray);
                 } catch (DBALException $e) {
                     $insertErrorMessage = $e->getPrevious()->getMessage();
                 }
@@ -496,20 +461,20 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     if ($newVersion) {
                         if ($this->enableLogging) {
                             $propArr = $this->getRecordPropertiesFromRow($table, $newRow);
-                            $this->log($table, $id, SystemLogDatabaseAction::INSERT, 0, SystemLogErrorClassification::MESSAGE, 'New version created of table \'%s\', uid \'%s\'. UID of new version is \'%s\'', 10, [$table, $fieldArray['t3ver_oid'], $id], $propArr['event_pid'], $NEW_id);
+                            $this->log($table, $id, SystemLogDatabaseAction::INSERT, 0, SystemLogErrorClassification::MESSAGE, 'New version created "{table}:{uid}". UID of new version is "{offlineUid}"', 10, ['table' => $table, 'uid' => $fieldArray['t3ver_oid'], 'offlineUid' => $id], $propArr['event_pid'], $NEW_id);
                         }
                     } else {
                         if ($this->enableLogging) {
                             $propArr = $this->getRecordPropertiesFromRow($table, $newRow);
                             $page_propArr = $this->getRecordProperties('pages', $propArr['pid']);
-                            $this->log($table, $id, SystemLogDatabaseAction::INSERT, 0, SystemLogErrorClassification::MESSAGE, 'Record \'%s\' (%s) was inserted on page \'%s\' (%s)', 10, [$propArr['header'], $table . ':' . $id, $page_propArr['header'], $newRow['pid']], $newRow['pid'], $NEW_id);
+                            $this->log($table, $id, SystemLogDatabaseAction::INSERT, 0, SystemLogErrorClassification::MESSAGE, 'Record "{title}" ({table}:{uid}) was inserted on page "{pageTitle}" ({pid})', 10, ['title' => $propArr['header'], 'table' => $table, 'uid' => $id, 'pageTitle' => $page_propArr['header'], 'pid' => $newRow['pid']], $newRow['pid'], $NEW_id);
                         }
                         // Clear cache for relevant pages:
                         $this->registerRecordIdForPageCacheClearing($table, $id);
                     }
                     return $id;
                 }
-                $this->log($table, 0, SystemLogDatabaseAction::INSERT, 0, SystemLogErrorClassification::SYSTEM_ERROR, 'SQL error: \'%s\' (%s)', 12, [$insertErrorMessage, $table . ':' . $id]);
+                $this->log($table, 0, SystemLogDatabaseAction::INSERT, 0, SystemLogErrorClassification::SYSTEM_ERROR, 'SQL error: "{reason}" ({table}:{uid})', 12, ['reason' => $insertErrorMessage, 'table' => $table, 'uid' => $id]);
             }
         }
         return null;
