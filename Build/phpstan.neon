@@ -1,0 +1,13 @@
+includes:
+	- %currentWorkingDirectory%/.Build/vendor/phpstan/phpstan-strict-rules/rules.neon
+	- %currentWorkingDirectory%/.Build/vendor/phpstan/phpstan-deprecation-rules/rules.neon
+	- %currentWorkingDirectory%/.Build/vendor/friendsoftypo3/phpstan-typo3/extension.neon
+
+parameters:
+  level: 8
+
+  paths:
+    - %currentWorkingDirectory%/Classes
+  excludePaths:
+      analyse:
+          - %currentWorkingDirectory%/Classes/DataHandling

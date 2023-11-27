@@ -19,19 +19,18 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class SequencerService
 {
-
     /**
      * @var string
      */
     private $sequenceTable = 'tx_pxdbsequencer_sequence';
 
     /**
-     * @var integer
+     * @var int
      */
     private $defaultStart = 0;
 
     /**
-     * @var integer
+     * @var int
      */
     private $defaultOffset = 1;
 
@@ -48,12 +47,10 @@ class SequencerService
         $this->connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
     }
 
-
     /**
      * Sets the default start
      *
      * @param int $defaultStart
-     * @return void
      */
     public function setDefaultStart(int $defaultStart): void
     {
@@ -95,7 +92,7 @@ class SequencerService
                             ->executeQuery()
                             ->fetchAssociative();
 
-        if (!$row || !isset($row['current'])) {
+        if ($row === false || !isset($row['current'])) {
             $this->initSequencerForTable($table);
             return $this->getNextIdForTable($table, ++$depth);
         }
@@ -107,7 +104,7 @@ class SequencerService
 
             $fieldValues = [
                 'current' => $row['current'],
-                'timestamp' => $GLOBALS['EXEC_TIME']
+                'timestamp' => $GLOBALS['EXEC_TIME'],
             ];
 
             $this->connectionPool->getConnectionForTable($this->sequenceTable)->update(
@@ -115,7 +112,7 @@ class SequencerService
                 $fieldValues,
                 [
                     'table_name' => $table,
-                    'timestamp' => (int)$row['timestamp']
+                    'timestamp' => (int)$row['timestamp'],
                 ]
             );
             return $this->getNextIdForTable($table, ++$depth);
@@ -127,7 +124,6 @@ class SequencerService
      * If no scheduler entry for the table yet exists, this method initializes the sequencer to fit offset, start and current max value in the table
      *
      * @param string $table
-     * @return void
      * @throws Exception
      */
     private function initSequencerForTable(string $table): void
@@ -136,8 +132,8 @@ class SequencerService
         $fieldValues = [
             'table_name' => $table,
             'current' => $start,
-            'offset' => (int)$this->defaultOffset,
-            'timestamp' => $GLOBALS['EXEC_TIME']
+            'offset' => $this->defaultOffset,
+            'timestamp' => $GLOBALS['EXEC_TIME'],
         ];
 
         $databaseConnectionForPages = $this->connectionPool->getConnectionForTable($this->sequenceTable);
@@ -163,14 +159,13 @@ class SequencerService
                                    ->executeQuery()
                                    ->fetchOne();
 
-        return $this->defaultStart + ($this->defaultOffset * ceil($currentMax / $this->defaultOffset));
+        return (int)($this->defaultStart + ($this->defaultOffset * ceil($currentMax / $this->defaultOffset)));
     }
 
     /**
      * Sets the default offset
      *
      * @param int $defaultOffset
-     * @return void
      */
     public function setDefaultOffset(int $defaultOffset): void
     {

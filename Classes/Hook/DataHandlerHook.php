@@ -24,8 +24,6 @@ class DataHandlerHook
 
     /**
      * Constructor
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -38,16 +36,15 @@ class DataHandlerHook
      * @param string $status
      * @param string $table
      * @param mixed $id
-     * @param array $fieldArray
+     * @param array<mixed> $fieldArray
      * @param DataHandler $pObj
-     * @return void
      * @throws \Exception
      */
-    public function processDatamap_postProcessFieldArray($status, $table, $id, &$fieldArray, &$pObj)
+    public function processDatamap_postProcessFieldArray($status, $table, $id, &$fieldArray, &$pObj): void
     {
         if (str_contains($id, 'NEW') && $this->TYPO3Service->needsSequencer($table)) {
             $newId = $this->TYPO3Service->getSequencerService()->getNextIdForTable($table);
-            if ($newId) {
+            if ($newId > 0) {
                 $pObj->currentSuggestUid = $newId;
                 $pObj->suggestedInsertUids[$table . ':' . $newId] = true;
             } else {

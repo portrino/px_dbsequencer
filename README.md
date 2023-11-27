@@ -108,9 +108,9 @@ switch ($applicationContext[0]) {
 
 | PxDbsequencer | TYPO3 | PHP       | Support / Development                |
 |---------------|-------|-----------|--------------------------------------|
-| dev-typo3-v12 | 12.x | 8.0 - 8.2 | features, bugfixes, security updates | 
-| 0.11.x        | 11.5  | 7.4 - 8.1 | features, bugfixes, security updates |
-| 0.10.x        | 10.4  | 7.2 - 7.4 | bugfixes, security updates           |
+| 0.12.x        | 12.4  | 8.1 - 8.2 | features, bugfixes, security updates | 
+| 0.11.x        | 11.5  | 7.4 - 8.1 | bugfixes, security updates           |
+| 0.10.x        | 10.4  | 7.2 - 7.4 | none                                 |
 | 0.9.x         | 9.5   | 7.2 - 7.4 | none                                 |
 | 0.7.x         | 8.7   | 7.0 - 7.4 | none                                 |
 | 0.6.x         | 7.6   | 5.5 - 7.3 | none                                 |

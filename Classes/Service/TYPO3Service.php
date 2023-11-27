@@ -16,22 +16,21 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class TYPO3Service
 {
-
     /**
      * @var SequencerService
      */
     private $sequencerService;
 
     /**
-     * @var array Array of configured tables that should call the sequencer
+     * @var array<string> Array of configured tables that should call the sequencer
      */
-    private $supportedTables;
+    private $supportedTables = [];
 
     /**
      * Constructor
      *
      * @param SequencerService $sequencer
-     * @param array|null $conf
+     * @param array<mixed>|null $conf
      */
     public function __construct(SequencerService $sequencer, ?array $conf = null)
     {
@@ -49,7 +48,7 @@ class TYPO3Service
      * Returns, whether a table is configured to use the sequencer
      *
      * @param string $tableName
-     * @return boolean
+     * @return bool
      */
     public function needsSequencer(string $tableName): bool
     {
@@ -60,7 +59,6 @@ class TYPO3Service
      * Sets sequencer service
      *
      * @param SequencerService $sequencerService
-     * @return void
      */
     public function setSequencerService(SequencerService $sequencerService): void
     {
