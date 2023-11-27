@@ -1,5 +1,13 @@
 # PxDbsequencer Changelog
 
+0.12.0 - 2023-11-27
+-------------------
+* [CLEANUP] small code clean-ups
+* [TASK] adds github workflows
+
+#### 2023-03-28
+* [TASK] updates composer version constrain for typo3/* v12 package requirement(s)
+
 #### 2023-02-22
 * [WIP][!!!] updates extension to be compatible with TYPO3 v12
 * [TASK] updates DataHandler XClass accordingly
@@ -7,7 +15,7 @@
 * [CLEANUP] updates code formatting and migrates changes from parent objects/ overrides
 
 0.11.0 - 2022-11-13
-------------------
+-------------------
 * [TASK] updates composer.json -> updates typo3/cms-core version requirement
 * [TASK] updates CHANGELOG and README
 
@@ -21,7 +29,7 @@
 * [CLEANUP] run dos2unix on all extension files
 
 0.10.2 - 2022-11-13
-------------------
+-------------------
 * [TASK] adds LICENSE and README
 
 #### 2021-09-17
