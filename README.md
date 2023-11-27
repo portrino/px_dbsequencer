@@ -1,9 +1,10 @@
 # TYPO3 extension `px_dbsequencer`
 
 [![Latest Stable Version](https://poser.pugx.org/portrino/px_dbsequencer/v/stable)](https://packagist.org/packages/portrino/px_dbsequencer)
-[![TYPO3 11](https://img.shields.io/badge/TYPO3-11-orange.svg)](https://get.typo3.org/version/11)
+[![TYPO3 12](https://img.shields.io/badge/TYPO3-12-orange.svg)](https://get.typo3.org/version/12)
 [![Total Downloads](https://poser.pugx.org/portrino/px_dbsequencer/downloads)](https://packagist.org/packages/portrino/px_dbsequencer)
 [![Monthly Downloads](https://poser.pugx.org/portrino/px_dbsequencer/d/monthly)](https://packagist.org/packages/portrino/px_dbsequencer)
+![CI](https://github.com/b13/container/actions/workflows/ci.yml/badge.svg)
 
 > Database Sequencer for TYPO3
 
