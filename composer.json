@@ -16,7 +16,7 @@
         "source": "https://github.com/portrino/px_dbsequencer/"
     },
     "require": {
-        "typo3/cms-backend": "^12.4"
+        "typo3/cms-backend": "^13.2"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.28",
@@ -28,7 +28,7 @@
         "phpstan/phpstan-deprecation-rules": "^1.1",
         "phpstan/phpstan-strict-rules": "^1.5",
         "seld/jsonlint": "^1.9",
-        "typo3/coding-standards": "^0.6"
+        "typo3/coding-standards": "dev-main"
     },
     "replace": {
         "typo3-ter/px-dbsequencer": "self.version"

@@ -1,8 +1,8 @@
 <?php
 
-defined('TYPO3') || die();
+defined('TYPO3') || die('Access denied.');
 
-(function () {
+call_user_func(static function() {
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx_pxdbsequencer'] =
         \Portrino\PxDbsequencer\Hook\DataHandlerHook::class;
 
@@ -11,4 +11,4 @@ defined('TYPO3') || die();
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\DataHandling\DataHandler::class] = [
         'className' => \Portrino\PxDbsequencer\DataHandling\DataHandler::class,
     ];
-})();
+});
