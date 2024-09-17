@@ -1,10 +1,10 @@
 # TYPO3 extension `px_dbsequencer`
 
 [![Latest Stable Version](https://poser.pugx.org/portrino/px_dbsequencer/v/stable)](https://packagist.org/packages/portrino/px_dbsequencer)
-[![TYPO3 12](https://img.shields.io/badge/TYPO3-12-orange.svg)](https://get.typo3.org/version/12)
+[![TYPO3 13](https://img.shields.io/badge/TYPO3-13-orange.svg)](https://get.typo3.org/version/13)
 [![Total Downloads](https://poser.pugx.org/portrino/px_dbsequencer/downloads)](https://packagist.org/packages/portrino/px_dbsequencer)
 [![Monthly Downloads](https://poser.pugx.org/portrino/px_dbsequencer/d/monthly)](https://packagist.org/packages/portrino/px_dbsequencer)
-![CI](https://github.com/b13/container/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/portrino/px_dbsequencer/actions/workflows/ci.yml/badge.svg)](https://github.com/portrino/px_dbsequencer/actions)
 
 > Database Sequencer for TYPO3
 
@@ -48,9 +48,9 @@ After finishing the installation, head over to the extension settings and set th
 tables you'd like to sequence.
 
 The extension settings, like the system identifier, can also be configured depending on the current `TYPO3_CONTEXT` via 
-`typo3conf/AdditionalConfiguration.php` (or `config/system/additional.php`)
+`config/system/additional.php`
 
-SO, a possible configuration in `typo3conf/LocalConfiguration.php` (or `config/system/settings.php`) could look like:
+SO, a possible configuration in `config/system/settings.php` could look like:
 
 ```
 return [
@@ -76,7 +76,7 @@ return [
 ];
 ```
 
-and in `typo3conf/AdditionalConfiguration.php` (or `config/system/additional.php`) could be something like:
+and in `config/system/additional.php` could be something like:
 
 ```
 // contextual environment settings
@@ -109,6 +109,7 @@ switch ($applicationContext[0]) {
 
 | PxDbsequencer | TYPO3 | PHP       | Support / Development                |
 |---------------|-------|-----------|--------------------------------------|
+| 0.13.x        | 13.4  | 8.1 - 8.3 | features, bugfixes, security updates | 
 | 0.12.x        | 12.4  | 8.1 - 8.2 | features, bugfixes, security updates | 
 | 0.11.x        | 11.5  | 7.4 - 8.1 | bugfixes, security updates           |
 | 0.10.x        | 10.4  | 7.2 - 7.4 | none                                 |
