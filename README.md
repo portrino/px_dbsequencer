@@ -4,7 +4,7 @@
 [![TYPO3 13](https://img.shields.io/badge/TYPO3-13-orange.svg)](https://get.typo3.org/version/13)
 [![Total Downloads](https://poser.pugx.org/portrino/px_dbsequencer/downloads)](https://packagist.org/packages/portrino/px_dbsequencer)
 [![Monthly Downloads](https://poser.pugx.org/portrino/px_dbsequencer/d/monthly)](https://packagist.org/packages/portrino/px_dbsequencer)
-[![CI](https://github.com/portrino/px_dbsequencer/actions/workflows/ci.yml/badge.svg)](https://github.com/portrino/px_dbsequencer/actions)
+[![CI](https://github.com/portrino/px_dbsequencer/actions/workflows/ci.yml/badge.svg)](https://github.com/portrino/px_dbsequencer/actions/workflows/ci.yml)
 
 > Database Sequencer for TYPO3
 
