@@ -109,7 +109,7 @@ switch ($applicationContext[0]) {
 
 | PxDbsequencer | TYPO3 | PHP       | Support / Development                |
 |---------------|-------|-----------|--------------------------------------|
-| 0.13.x        | 13.4  | 8.1 - 8.3 | features, bugfixes, security updates | 
+| 0.13.x        | 13.4  | 8.2 - 8.3 | features, bugfixes, security updates | 
 | 0.12.x        | 12.4  | 8.1 - 8.2 | features, bugfixes, security updates | 
 | 0.11.x        | 11.5  | 7.4 - 8.1 | bugfixes, security updates           |
 | 0.10.x        | 10.4  | 7.2 - 7.4 | none                                 |
