@@ -12,10 +12,10 @@
 
 $EM_CONF[$_EXTKEY] = [
     'title' => 'Database Sequencer',
-    'description' => 'With this extension you can ensure different unique keys for the configured tables (e.g.: pages, pages_language_overlay, tt_content)',
+    'description' => 'With this extension you can ensure different unique keys for the configured tables (e.g.: pages, tt_content, ...)',
     'category' => 'be',
-    'author' => 'Andre Wuttig, Axel Boeswetter, Thomas Griessbach',
-    'author_email' => 'wuttig@portrino.de, boeswetter@portrino.de, griessbach@portrino.de',
+    'author' => 'Andre Wuttig, Axel Böswetter, Thomas Grießbach',
+    'author_email' => 'dev@portrino.de',
     'author_company' => 'portrino GmbH',
     'shy' => '',
     'priority' => '',
@@ -30,7 +30,7 @@ $EM_CONF[$_EXTKEY] = [
     'version' => '0.13.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '13.0.0-13.99.99',
+            'typo3' => '13.4.0-13.99.99',
         ],
         'conflicts' => [
         ],

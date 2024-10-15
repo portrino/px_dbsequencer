@@ -3,6 +3,7 @@
     "description": "With this extension you can ensure different unique keys for the configured tables (e.g.: pages, tt_content)",
     "license": "GPL-2.0-or-later",
     "type": "typo3-cms-extension",
+    "readme": "README.md",
     "authors": [
         {
             "name": "portrino GmbH",
@@ -16,19 +17,22 @@
         "source": "https://github.com/portrino/px_dbsequencer/"
     },
     "require": {
-        "typo3/cms-backend": "^13.2"
+        "php": "^8.2",
+        "typo3/cms-backend": "^13.4"
     },
     "require-dev": {
-        "ergebnis/composer-normalize": "^2.28",
-        "friendsofphp/php-cs-fixer": "^3.14",
+        "ergebnis/composer-normalize": "^2.44",
+        "friendsofphp/php-cs-fixer": "^3.64",
         "friendsoftypo3/phpstan-typo3": "^0.9",
         "helmich/typo3-typoscript-lint": "^3.1",
-        "php-coveralls/php-coveralls": "^2.5",
-        "phpstan/phpstan": "^1.10",
-        "phpstan/phpstan-deprecation-rules": "^1.1",
-        "phpstan/phpstan-strict-rules": "^1.5",
-        "seld/jsonlint": "^1.9",
-        "typo3/coding-standards": "dev-main"
+        "phpstan/phpstan": "^1.12",
+        "phpstan/phpstan-deprecation-rules": "^1.2",
+        "phpstan/phpstan-strict-rules": "^1.6",
+        "seld/jsonlint": "^1.11",
+        "spaze/phpstan-disallowed-calls": "^3.5",
+        "tomasvotruba/cognitive-complexity": "^0.2.3",
+        "tomasvotruba/type-coverage": "^0.3.1",
+        "typo3/coding-standards": "^0.8"
     },
     "replace": {
         "typo3-ter/px-dbsequencer": "self.version"
@@ -65,15 +69,21 @@
     },
     "scripts": {
         "ci": [
+            "@ci:composer",
             "@ci:static"
         ],
-        "ci:composer:normalize": "@composer normalize --no-check-lock --dry-run",
+        "ci:composer": [
+            "@ci:composer:validate",
+            "@ci:composer:normalize",
+            "@ci:composer:psr-verify"
+        ],
+        "ci:composer:normalize": "@composer normalize --dry-run",
         "ci:composer:psr-verify": "@composer dumpautoload --optimize --strict-psr",
+        "ci:composer:validate": "@composer validate",
         "ci:json:lint": "find . ! -path '*.Build/*' ! -path '*node_modules/*' -name '*.json' | xargs -r php .Build/bin/jsonlint -q",
         "ci:php": [
             "@ci:php:cs-fixer",
             "@ci:php:lint",
-            "@ci:php:sniff",
             "@ci:php:stan"
         ],
         "ci:php:cs-fixer": "./.Build/bin/php-cs-fixer fix --config ./Build/php-cs-fixer.php -v --dry-run --using-cache no --diff",
@@ -90,6 +100,7 @@
         ],
         "ci:ts:lint": "[ -d Configuration/TypoScript ] && ./.Build/bin/typoscript-lint -c ./Build/typoscript-lint.yaml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript || echo 'No TypoScript files found.'",
         "ci:yaml:lint": "find . ! -path '*.Build/*' ! -path '*node_modules/*' -regextype egrep -regex '.*.ya?ml$' | xargs -r php ./.Build/bin/yaml-lint",
+        "fix:composer:normalize": "@composer normalize",
         "fix:php": [
             "@fix:php:cs"
         ],
@@ -97,11 +108,12 @@
     },
     "scripts-descriptions": {
         "ci": "Runs all dynamic and static code checks.",
+        "ci:composer": "Runs all checks for composer.json.",
         "ci:composer:normalize": "Checks the composer.json.",
         "ci:composer:psr-verify": "Verifies PSR-4 namespace correctness.",
+        "ci:composer:validate": "Validates the composer.json.",
         "ci:json:lint": "Lints the JSON files.",
         "ci:php": "Runs all static checks for the PHP files.",
-        "ci:php:copypaste": "Checks for copy'n'pasted PHP code.",
         "ci:php:cs-fixer": "Checks the code style with the PHP Coding Standards Fixer (PHP-CS-Fixer).",
         "ci:php:lint": "Lints the PHP files for syntax errors.",
         "ci:php:stan": "Checks the PHP types using PHPStan.",

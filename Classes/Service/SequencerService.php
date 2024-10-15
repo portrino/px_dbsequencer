@@ -22,22 +22,22 @@ class SequencerService
     /**
      * @var string
      */
-    private $sequenceTable = 'tx_pxdbsequencer_sequence';
+    private string $sequenceTable = 'tx_pxdbsequencer_sequence';
 
     /**
      * @var int
      */
-    private $defaultStart = 0;
+    private int $defaultStart = 0;
 
     /**
      * @var int
      */
-    private $defaultOffset = 1;
+    private int $defaultOffset = 1;
 
     /**
      * @var ConnectionPool
      */
-    private $connectionPool;
+    private ConnectionPool $connectionPool;
 
     /**
      * SequencerService constructor.

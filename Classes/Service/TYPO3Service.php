@@ -16,21 +16,18 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class TYPO3Service
 {
-    /**
-     * @var SequencerService
-     */
-    private $sequencerService;
+    private SequencerService $sequencerService;
 
     /**
      * @var array<string> Array of configured tables that should call the sequencer
      */
-    private $supportedTables = [];
+    private array $supportedTables = [];
 
     /**
      * Constructor
      *
      * @param SequencerService $sequencer
-     * @param array<mixed>|null $conf
+     * @param array<string, mixed>|null $conf
      */
     public function __construct(SequencerService $sequencer, ?array $conf = null)
     {

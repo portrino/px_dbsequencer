@@ -1,5 +1,22 @@
 # PxDbsequencer Changelog
 
+0.13.0 - 2024-10-15
+-------------------
+* [TASK] updates phpstan config and updates/ adapts several classes accordingly
+* [TASK] updates required packages in composer.json
+* [TASK] updates version constraints in ext_emconf
+* [TASK] updates CHANGELOG
+
+#### 2024-09-17
+* [BUGFIX] removes php 8.1 from workflow matrix, as TYPO3 v13 has 8.2 as minimum
+* [TASK] adds php 8.3 to workflow matrix
+* [TASK] updates ext_emconf
+* [CLEANUP] updates to DataHandler override
+* [CLEANUP] updates README
+
+#### 2024-08-06
+* [TASK] updates DataHandler xclass to be compatible with TYPO3 v13.2
+
 0.12.0 - 2023-11-27
 -------------------
 * [CLEANUP] small code clean-ups

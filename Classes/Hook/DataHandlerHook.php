@@ -9,25 +9,24 @@
 
 namespace Portrino\PxDbsequencer\Hook;
 
+use Doctrine\DBAL\Driver\Exception;
 use Portrino\PxDbsequencer\DataHandling\DataHandler;
-use Portrino\PxDbsequencer\Service;
+use Portrino\PxDbsequencer\Service\SequencerService;
+use Portrino\PxDbsequencer\Service\TYPO3Service;
 
 /**
  * DataHandlerHook
  */
 class DataHandlerHook
 {
-    /**
-     * @var Service\TYPO3Service
-     */
-    private $TYPO3Service;
+    private TYPO3Service $TYPO3Service;
 
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->TYPO3Service = new Service\TYPO3Service(new Service\SequencerService());
+        $this->TYPO3Service = new TYPO3Service(new SequencerService());
     }
 
     /**
@@ -36,12 +35,18 @@ class DataHandlerHook
      * @param string $status
      * @param string $table
      * @param mixed $id
-     * @param array<mixed> $fieldArray
+     * @param array<string, mixed> $fieldArray
      * @param DataHandler $pObj
-     * @throws \Exception
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
      */
-    public function processDatamap_postProcessFieldArray($status, $table, $id, &$fieldArray, &$pObj): void
-    {
+    public function processDatamap_postProcessFieldArray(
+        string $status,
+        string $table,
+        mixed $id,
+        array &$fieldArray,
+        DataHandler &$pObj
+    ): void {
         if (str_contains($id, 'NEW') && $this->TYPO3Service->needsSequencer($table)) {
             $newId = $this->TYPO3Service->getSequencerService()->getNextIdForTable($table);
             if ($newId > 0) {
