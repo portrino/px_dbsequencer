@@ -108,14 +108,14 @@ switch ($applicationContext[0]) {
 ## 3 Compatibility
 
 | PxDbsequencer | TYPO3 | PHP       | Support / Development                |
-|---------------|-------|-----------|--------------------------------------|
-| 0.13.x        | 13.4  | 8.2 - 8.3 | features, bugfixes, security updates | 
-| 0.12.x        | 12.4  | 8.1 - 8.2 | features, bugfixes, security updates | 
-| 0.11.x        | 11.5  | 7.4 - 8.1 | bugfixes, security updates           |
-| 0.10.x        | 10.4  | 7.2 - 7.4 | none                                 |
-| 0.9.x         | 9.5   | 7.2 - 7.4 | none                                 |
-| 0.7.x         | 8.7   | 7.0 - 7.4 | none                                 |
-| 0.6.x         | 7.6   | 5.5 - 7.3 | none                                 |
+|-----------|-------|-----------|--------------------------------------|
+| 13.x      | 13.4  | 8.2 - 8.3 | features, bugfixes, security updates | 
+| 12.x      | 12.4  | 8.1 - 8.2 | features, bugfixes, security updates | 
+| 11.x      | 11.5  | 7.4 - 8.1 | bugfixes, security updates           |
+| 10.x      | 10.4  | 7.2 - 7.4 | none                                 |
+| 9.x       | 9.5   | 7.2 - 7.4 | none                                 |
+| 0.7.x     | 8.7   | 7.0 - 7.4 | none                                 |
+| 0.6.x     | 7.6   | 5.5 - 7.3 | none                                 |
 
 ## 4 Authors
 

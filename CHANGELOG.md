@@ -1,5 +1,12 @@
 # PxDbsequencer Changelog
 
+13.1.0 - 2025-02-28
+-------------------
+* [TASK] updates DataHandler override to be compatible with TYPO3 v13.4.5
+* [TASK] updates required-dev packages and composer scripts
+* [CLEANUP] updates SequenceService to use new TYPO3 v13.4 API
+* [CLEANUP] switch to new version schema
+
 0.13.0 - 2024-10-15
 -------------------
 * [TASK] updates phpstan config and updates/ adapts several classes accordingly

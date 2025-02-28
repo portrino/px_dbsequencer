@@ -10,6 +10,7 @@
 namespace Portrino\PxDbsequencer\Service;
 
 use Doctrine\DBAL\Driver\Exception;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -40,11 +41,17 @@ class SequencerService
     private ConnectionPool $connectionPool;
 
     /**
+     * @var Context
+     */
+    private Context $context;
+
+    /**
      * SequencerService constructor.
      */
     public function __construct()
     {
         $this->connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $this->context = GeneralUtility::makeInstance(Context::class);
     }
 
     /**
@@ -79,7 +86,10 @@ class SequencerService
     public function getNextIdForTable(string $table, int $depth = 0): int
     {
         if ($depth > 10) {
-            throw new \RuntimeException('The sequencer cannot return IDs for this table -' . $table . ' Too many recursions - maybe to much load?');
+            throw new \RuntimeException(
+                'The sequencer cannot return IDs for this table -' . $table . ' Too many recursions - maybe to much load?',
+                1740753828
+            );
         }
 
         /** @var QueryBuilder $queryBuilder */
@@ -104,7 +114,7 @@ class SequencerService
 
             $fieldValues = [
                 'current' => $row['current'],
-                'timestamp' => $GLOBALS['EXEC_TIME'],
+                'timestamp' => $this->context->getPropertyFromAspect('date', 'timestamp'),
             ];
 
             $this->connectionPool->getConnectionForTable($this->sequenceTable)->update(
@@ -133,7 +143,7 @@ class SequencerService
             'table_name' => $table,
             'current' => $start,
             'offset' => $this->defaultOffset,
-            'timestamp' => $GLOBALS['EXEC_TIME'],
+            'timestamp' => $this->context->getPropertyFromAspect('date', 'timestamp'),
         ];
 
         $databaseConnectionForPages = $this->connectionPool->getConnectionForTable($this->sequenceTable);
