@@ -1,5 +1,10 @@
 # PxDbsequencer Changelog
 
+13.1.1 - 2025-05-13
+-------------------
+* [TASK] updates DataHandler override to be compatible with TYPO3 v13.4.10
+* [CLEANUP] updates composer scripts and ext_emconf.php
+
 13.1.0 - 2025-02-28
 -------------------
 * [TASK] updates DataHandler override to be compatible with TYPO3 v13.4.5

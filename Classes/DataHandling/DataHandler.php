@@ -81,6 +81,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
             foreach ($tableDataMap as $identifier => $fieldValues) {
                 if (!MathUtility::canBeInterpretedAsInteger($identifier)) {
                     $this->datamap[$tableName][$identifier] = $this->initializeSlugFieldsToEmptyString($tableName, $fieldValues);
+                    $this->datamap[$tableName][$identifier] = $this->initializeUuidFieldsToEmptyString($tableName, $fieldValues);
                 }
             }
         }
@@ -94,7 +95,6 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
         }
         $orderOfTables = array_unique(array_merge($orderOfTables, array_keys($this->datamap)));
         $tcaSchemaFactory = GeneralUtility::makeInstance(TcaSchemaFactory::class);
-        // Process the tables...
         foreach ($orderOfTables as $table) {
             if (!$this->checkModifyAccessList($table)) {
                 // User is not allowed to modify
@@ -179,11 +179,15 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         && $languageField && isset($incomingFieldArray[$languageField]) && $incomingFieldArray[$languageField] > 0
                         && $transOrigPointerField && isset($incomingFieldArray[$transOrigPointerField]) && $incomingFieldArray[$transOrigPointerField] > 0
                     ) {
-                        if (!$this->checkRecordInsertAccess($table, $incomingFieldArray[$transOrigPointerField])) {
+                        $pageRecord = BackendUtility::getRecord('pages', $incomingFieldArray[$transOrigPointerField]) ?? [];
+                        if (!$this->hasPermissionToInsert($table, $incomingFieldArray[$transOrigPointerField], $pageRecord)) {
+                            $this->log($table, $incomingFieldArray[$transOrigPointerField], SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to insert record on pages:{pid} where table "{table}" is not allowed', null, ['pid' => $incomingFieldArray[$transOrigPointerField], 'table' => $table], $incomingFieldArray[$transOrigPointerField]);
                             continue;
                         }
                     } else {
-                        if (!$this->checkRecordInsertAccess($table, $theRealPid)) {
+                        $pageRecord = BackendUtility::getRecord('pages', $theRealPid) ?? [];
+                        if (!$this->hasPermissionToInsert($table, $theRealPid, $pageRecord)) {
+                            $this->log($table, $theRealPid, SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to insert record on pages:{pid} where table "{table}" is not allowed', null, ['pid' => $theRealPid, 'table' => $table], $theRealPid);
                             continue;
                         }
                     }
@@ -278,36 +282,36 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     // $id is an integer. We're updating an existing record or creating a workspace version.
                     $id = (int)$id;
                     $fieldArray = [];
-
                     $recordAccess = null;
+                    $currentRecord = BackendUtility::getRecord($table, $id, '*', '', false);
+                    if (empty($currentRecord) || ($currentRecord['pid'] ?? null) === null) {
+                        // Skip if there is no record. Skip if record has no pid column indicating incomplete DB.
+                        continue;
+                    }
+                    $pageRecord = [];
+                    if ($table === 'pages') {
+                        $pageRecord = $currentRecord;
+                    } elseif ((int)$currentRecord['pid'] > 0) {
+                        $pageRecord = BackendUtility::getRecord('pages', $currentRecord['pid']) ?? [];
+                    }
                     foreach ($hookObjectsArr as $hookObj) {
                         if (method_exists($hookObj, 'checkRecordUpdateAccess')) {
                             $recordAccess = $hookObj->checkRecordUpdateAccess($table, $id, $incomingFieldArray, $recordAccess, $this);
                         }
                     }
                     if ($recordAccess !== null) {
-                        $recordAccess = (bool)$recordAccess;
-                    } else {
-                        $recordAccess = $this->checkRecordUpdateAccess($table, $id);
-                    }
-                    if (!$recordAccess) {
-                        if ($this->enableLogging) {
-                            $propArr = $this->getRecordProperties($table, $id);
-                            $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record "{title}" ({table}:{uid}) without permission or non-existing page', null, ['title' => $propArr['header'], 'table' => $table, 'uid' => $id], $propArr['event_pid']);
+                        if (!$recordAccess) {
+                            $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record {table}:{uid} denied by checkRecordUpdateAccess hook', null, ['table' => $table, 'uid' => $id], (int)$currentRecord['pid']);
+                            continue;
                         }
+                    } elseif ($pageRecord === [] && $currentRecord['pid'] === 0 && !($this->admin || BackendUtility::isRootLevelRestrictionIgnored($table))
+                        || (($pageRecord !== [] || $currentRecord['pid'] !== 0) && !$this->hasPermissionToUpdate($table, $pageRecord))
+                    ) {
+                        $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record {table}:{uid} without permission or non-existing page', null, ['table' => $table, 'uid' => $id], (int)$currentRecord['pid']);
                         continue;
                     }
-
-                    // Next check of the record permissions (internals)
-                    $recordAccess = $this->BE_USER->recordEditAccessInternals($table, $id);
-                    if (!$recordAccess) {
-                        $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'recordEditAccessInternals() check failed [{reason}]', null, ['reason' => $this->BE_USER->errorMsg]);
-                        continue;
-                    }
-
-                    $currentRecord = BackendUtility::getRecord($table, $id, '*', '', false);
-                    if (empty($currentRecord) || ($currentRecord['pid'] ?? null) === null) {
-                        // Skip if there is no record. Skip if record has no pid column indicating incomplete DB.
+                    if (!$this->BE_USER->recordEditAccessInternals($table, $currentRecord)) {
+                        $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record {table}:{uid} failed with: {reason}', null, ['table' => $table, 'uid' => $id, 'reason' => $this->BE_USER->errorMsg]);
                         continue;
                     }
                     // Use the new id of the versioned record we're trying to write to.
@@ -327,7 +331,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         } elseif ($this->workspaceAllowAutoCreation($table, $id, (int)$currentRecord['pid'])) {
                             // new version of a record created in a workspace - so always refresh page tree to indicate there is a change in the workspace
                             $this->pagetreeNeedsRefresh = true;
-                            /** @var \TYPO3\CMS\Core\DataHandling\DataHandler $tce */
+                            /** @var DataHandler $tce */
                             $tce = GeneralUtility::makeInstance(self::class);
                             $tce->enableLogging = $this->enableLogging;
                             // Setting up command for creating a new version of the record:
@@ -483,9 +487,9 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
         // Store in history
         $this->getRecordHistoryStore()->addRecord($table, $id, $newRow, $this->correlationId);
         if ($tcaSchemaFactory->get($table)->isWorkspaceAware() && (int)($newRow['t3ver_wsid'] ?? 0) > 0) {
-            $this->log($table, $id, SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::MESSAGE, 'New version created "{table}:{uid}". UID of new version is "{offlineUid}"', null, ['table' => $table, 'uid' => $newRow['uid'], 'offlineUid' => $id], $table === 'pages' ? $newRow['uid'] : $newRow['pid'], $NEW_id);
+            $this->log($table, $id, SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::MESSAGE, 'New version created "{table}:{uid}". UID of new version is "{offlineUid}"', null, ['table' => $table, 'uid' => $newRow['uid'], 'offlineUid' => $id], $table === 'pages' ? $newRow['uid'] : $newRow['pid']);
         } else {
-            $this->log($table, $id, SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::MESSAGE, 'Record {table}:{uid} was inserted on page {pid}', null, ['table' => $table, 'uid' => $id, 'pid' => $newRow['pid']], $newRow['pid'], $NEW_id);
+            $this->log($table, $id, SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::MESSAGE, 'Record {table}:{uid} was inserted on page {pid}', null, ['table' => $table, 'uid' => $id, 'pid' => $newRow['pid']], $newRow['pid']);
             // Clear cache of relevant pages
             $this->registerRecordIdForPageCacheClearing($table, $id);
         }

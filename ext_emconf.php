@@ -17,20 +17,11 @@ $EM_CONF[$_EXTKEY] = [
     'author' => 'Andre Wuttig, Axel Böswetter, Thomas Grießbach',
     'author_email' => 'dev@portrino.de',
     'author_company' => 'portrino GmbH',
-    'shy' => '',
-    'priority' => '',
-    'module' => '',
     'state' => 'beta',
-    'internal' => '',
-    'uploadfolder' => '0',
-    'createDirs' => '',
-    'modify_tables' => '',
-    'clearCacheOnLoad' => 0,
-    'lockType' => '',
-    'version' => '13.1.0',
+    'version' => '13.1.1',
     'constraints' => [
         'depends' => [
-            'typo3' => '13.4.5-13.4.99',
+            'typo3' => '13.4.10-13.4.99',
         ],
         'conflicts' => [
         ],

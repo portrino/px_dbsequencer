@@ -13,7 +13,7 @@ use Ssch\TYPO3Rector\Set\Typo3SetList;
 
 return RectorConfig::configure()
     ->withPaths([
-        dirname(__DIR__) . '/Classes',
+        dirname(__DIR__),
     ])
     //->withPhpSets()
     // uncomment to reach your current PHP version
@@ -33,7 +33,7 @@ return RectorConfig::configure()
     ])
     ->withConfiguredRule(ExtEmConfRector::class, [
         ExtEmConfRector::PHP_VERSION_CONSTRAINT => '8.2.0-8.4.99',
-        ExtEmConfRector::TYPO3_VERSION_CONSTRAINT => '13.4.5-13.4.99',
+        ExtEmConfRector::TYPO3_VERSION_CONSTRAINT => '13.4.10-13.4.99',
         ExtEmConfRector::ADDITIONAL_VALUES_TO_BE_REMOVED => [],
     ])
 ;
