@@ -17,8 +17,8 @@
         "source": "https://github.com/portrino/px_dbsequencer/"
     },
     "require": {
-        "php": "^8.2",
-        "typo3/cms-backend": "^13.4.10"
+        "php": ">=8.2 <=8.5.99",
+        "typo3/cms-backend": "^14.0"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.44",
