@@ -18,10 +18,10 @@ $EM_CONF[$_EXTKEY] = [
     'author_email' => 'dev@portrino.de',
     'author_company' => 'portrino GmbH',
     'state' => 'beta',
-    'version' => '13.1.3',
+    'version' => '14.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '13.4.10-13.4.99',
+            'typo3' => '14.0.0-14.3.99',
         ],
         'conflicts' => [
         ],

@@ -4,6 +4,11 @@
 -------------------
 * [TASK] updates DataHandler override to be compatible with TYPO3 v13.4.22
 
+#### 2025-12-17 (Branch: typo3-v14)
+* [TASK] updates DataHandler override to be compatible with TYPO3 v14.0.1
+* [TASK] updates rector config, raise version in ext_emconf.php
+* [TASK] updates CHANGELOG and README
+
 13.1.2 - 2025-05-27
 -------------------
 * [BUGFIX] adds Configuration/Services.yaml to prevent exeptions when working in workspaces

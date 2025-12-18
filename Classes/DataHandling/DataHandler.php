@@ -61,12 +61,6 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
         $this->registerElementsToBeDeleted();
         $this->datamap = $this->unsetElementsToBeDeleted($this->datamap);
 
-        if ($this->BE_USER->workspace !== 0 && ($this->BE_USER->workspaceRec['freeze'] ?? false)) {
-            // Workspace is frozen
-            $this->log('sys_workspace', $this->BE_USER->workspace, SystemLogDatabaseAction::VERSIONIZE, null, SystemLogErrorClassification::USER_ERROR, 'All editing in this workspace has been frozen');
-            return;
-        }
-
         $hookObjectsArr = [];
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'] ?? [] as $className) {
             // Instantiate hooks and call first hook method
@@ -75,15 +69,6 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 $hookObject->processDatamap_beforeStart($this);
             }
             $hookObjectsArr[] = $hookObject;
-        }
-
-        foreach ($this->datamap as $tableName => $tableDataMap) {
-            foreach ($tableDataMap as $identifier => $fieldValues) {
-                if (!MathUtility::canBeInterpretedAsInteger($identifier)) {
-                    $this->datamap[$tableName][$identifier] = $this->initializeSlugFieldsToEmptyString($tableName, $fieldValues);
-                    $this->datamap[$tableName][$identifier] = $this->initializeUuidFieldsToEmptyString($tableName, $fieldValues);
-                }
-            }
         }
 
         $this->datamap = DataMapProcessor::instance($this->datamap, $this->BE_USER, $this->referenceIndexUpdater)->process();
@@ -135,7 +120,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 if (!MathUtility::canBeInterpretedAsInteger($id)) {
                     // $id is not an integer. We're creating a new record.
                     // Get a fieldArray with tca default values
-                    $fieldArray = $this->newFieldArray($table);
+                    $fieldArray = $this->newFieldArray($table, $incomingFieldArray);
                     if (isset($incomingFieldArray['pid'])) {
                         // A pid must be set for new records.
                         $pid_value = $incomingFieldArray['pid'];
@@ -196,7 +181,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         $this->log($table, 0, SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::USER_ERROR, 'recordEditAccessInternals() check failed [{reason}]', null, ['reason' => $this->BE_USER->errorMsg]);
                         continue;
                     }
-                    if (!$this->bypassWorkspaceRestrictions && !$this->BE_USER->workspaceAllowsLiveEditingInTable($table)) {
+                    if (!$this->BE_USER->workspaceAllowsLiveEditingInTable($table)) {
                         // If LIVE records cannot be created due to workspace restrictions, prepare creation of placeholder-record
                         // So, if no live records were allowed in the current workspace, we have to create a new version of this record
                         if ($schema->isWorkspaceAware()) {
@@ -209,13 +194,13 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     // Here the "pid" is set IF NOT the old pid was a string pointing to a place in the subst-id array.
                     [$tscPID] = BackendUtility::getTSCpid($table, $id, $old_pid_value ?: ($fieldArray['pid'] ?? 0));
                     // Apply TCA defaults from pageTS
-                    $fieldArray = $this->applyDefaultsForFieldArray($table, (int)$tscPID, $fieldArray);
+                    $fieldArray = $this->applyDefaultsForFieldArray($table, (int)$tscPID, $fieldArray, $incomingFieldArray);
                     // Apply page permissions as well
                     if ($table === 'pages') {
                         $fieldArray = GeneralUtility::makeInstance(PagePermissionAssembler::class)->applyDefaults(
                             $fieldArray,
                             (int)$tscPID,
-                            $this->userid,
+                            (int)$this->BE_USER->getUserId(),
                             (int)$this->BE_USER->firstMainGroup
                         );
                     }
@@ -268,11 +253,11 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                 $pxDbSequencerHookObj->processDatamap_postProcessFieldArray('new', $table, $id, $fieldArray, $this);
                             }
 
-                            $this->insertDB($table, $id, $fieldArray, null, (int)($incomingFieldArray['uid'] ?? 0));
+                            $this->insertDB($table, $id, $fieldArray, (int)($incomingFieldArray['uid'] ?? 0));
                             // Hold auto-versioned ids of placeholders
                             $this->autoVersionIdMap[$table][$this->substNEWwithIDs[$id]] = $this->substNEWwithIDs[$id];
                         } else {
-                            $this->insertDB($table, $id, $fieldArray, null, (int)($incomingFieldArray['uid'] ?? 0));
+                            $this->insertDB($table, $id, $fieldArray, (int)($incomingFieldArray['uid'] ?? 0));
                         }
                     }
                     // Note: When using the hook after INSERT operations, you will only get the temporary NEW... id passed to your hook as $id,
@@ -304,7 +289,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                             $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record {table}:{uid} denied by checkRecordUpdateAccess hook', null, ['table' => $table, 'uid' => $id], (int)$currentRecord['pid']);
                             continue;
                         }
-                    } elseif ($pageRecord === [] && $currentRecord['pid'] === 0 && !($this->admin || BackendUtility::isRootLevelRestrictionIgnored($table))
+                    } elseif ($pageRecord === [] && $currentRecord['pid'] === 0 && !($this->BE_USER->isAdmin() || $schema->getCapability(TcaSchemaCapability::RestrictionRootLevel)->shallIgnoreRootLevelRestriction())
                         || (($pageRecord !== [] || $currentRecord['pid'] !== 0) && !$this->hasPermissionToUpdate($table, $pageRecord))
                     ) {
                         $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record {table}:{uid} without permission or non-existing page', null, ['table' => $table, 'uid' => $id], (int)$currentRecord['pid']);
@@ -322,7 +307,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         $this->getVersionizedIncomingFieldArray($table, $id, $incomingFieldArray, $registerDBList);
                         // Use the new id of the copied/versioned record:
                         $id = $this->autoVersionIdMap[$table][$id];
-                    } elseif (!$this->bypassWorkspaceRestrictions && ($errorCode = $this->workspaceCannotEditRecord($table, $currentRecord))) {
+                    } elseif (($errorCode = $this->workspaceCannotEditRecord($table, $currentRecord))) {
                         // Versioning is required and it must be offline version!
                         // Check if there already is a workspace version
                         $workspaceVersion = BackendUtility::getWorkspaceVersionOfRecord($this->BE_USER->workspace, $table, $id, 'uid,t3ver_oid');
@@ -429,11 +414,11 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
      * @param string $table Record table name
      * @param string $id "NEW...." uid string
      * @param array $fieldArray Array of field=>value pairs to insert. FIELDS MUST MATCH the database FIELDS. No check is done. "pid" must point to the destination of the record!
-     * @param null $_ unused
+     * @param int $suggestedUid Suggested UID value for the inserted record. See the array $this->suggestedInsertUids; Admin-only feature
      * @return int|null Returns ID on success.
      * @internal should only be used from within DataHandler
      */
-    public function insertDB($table, $id, $fieldArray, $_ = null, $suggestedUid = 0): ?int
+    public function insertDB($table, $id, $fieldArray, $suggestedUid = 0): ?int
     {
         $tcaSchemaFactory = GeneralUtility::makeInstance(TcaSchemaFactory::class);
         if (!is_array($fieldArray) || !$tcaSchemaFactory->has($table) || !isset($fieldArray['pid'])) {
