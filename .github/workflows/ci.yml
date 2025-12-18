@@ -2,6 +2,10 @@ name: CI
 
 on:
   push:
+    # only trigger action if commits to master branch are pushed,
+    # to prevent the action from being executed twice on pull requests
+    branches:
+      - master
   pull_request:
 
 jobs:
