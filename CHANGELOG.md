@@ -1,5 +1,9 @@
 # PxDbsequencer Changelog
 
+13.1.3 - 2025-12-18
+-------------------
+* [TASK] updates DataHandler override to be compatible with TYPO3 v13.4.22
+
 13.1.2 - 2025-05-27
 -------------------
 * [BUGFIX] adds Configuration/Services.yaml to prevent exeptions when working in workspaces

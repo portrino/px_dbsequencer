@@ -180,7 +180,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         && $transOrigPointerField && isset($incomingFieldArray[$transOrigPointerField]) && $incomingFieldArray[$transOrigPointerField] > 0
                     ) {
                         $pageRecord = BackendUtility::getRecord('pages', $incomingFieldArray[$transOrigPointerField]) ?? [];
-                        if (!$this->hasPermissionToInsert($table, $incomingFieldArray[$transOrigPointerField], $pageRecord)) {
+                        if (!$this->hasPermissionToInsert($table, $incomingFieldArray[$transOrigPointerField], $pageRecord, (int)$incomingFieldArray[$languageField])) {
                             $this->log($table, $incomingFieldArray[$transOrigPointerField], SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to insert record on pages:{pid} where table "{table}" is not allowed', null, ['pid' => $incomingFieldArray[$transOrigPointerField], 'table' => $table], $incomingFieldArray[$transOrigPointerField]);
                             continue;
                         }

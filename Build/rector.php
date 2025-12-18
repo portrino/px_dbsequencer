@@ -7,6 +7,7 @@ use Rector\TypeDeclaration\Rector\ClassMethod\AddVoidReturnTypeWhereNoReturnRect
 use Rector\ValueObject\PhpVersion;
 use Ssch\TYPO3Rector\CodeQuality\General\ConvertImplicitVariablesToExplicitGlobalsRector;
 use Ssch\TYPO3Rector\CodeQuality\General\ExtEmConfRector;
+use Ssch\TYPO3Rector\CodeQuality\General\GeneralUtilityMakeInstanceToConstructorPropertyRector;
 use Ssch\TYPO3Rector\Configuration\Typo3Option;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
@@ -14,6 +15,11 @@ use Ssch\TYPO3Rector\Set\Typo3SetList;
 return RectorConfig::configure()
     ->withPaths([
         dirname(__DIR__),
+    ])
+    ->withSkip([
+        GeneralUtilityMakeInstanceToConstructorPropertyRector::class => [
+            dirname(__DIR__) . '/Classes/DataHandling/DataHandler.php',
+        ],
     ])
     //->withPhpSets()
     // uncomment to reach your current PHP version
