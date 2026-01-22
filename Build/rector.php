@@ -11,6 +11,7 @@ use Ssch\TYPO3Rector\CodeQuality\General\GeneralUtilityMakeInstanceToConstructor
 use Ssch\TYPO3Rector\Configuration\Typo3Option;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
+use Ssch\TYPO3Rector\TYPO311\v0\DateTimeAspectInsteadOfGlobalsExecTimeRector;
 
 return RectorConfig::configure()
     ->withPaths([
