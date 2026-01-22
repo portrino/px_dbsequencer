@@ -1,5 +1,9 @@
 # PxDbsequencer Changelog
 
+0.12.1 - 2026-01-22
+-------------------
+* [CLEANUP] adapts DataHandler xclass to prevent warnings
+
 0.12.0 - 2023-11-27
 -------------------
 * [CLEANUP] small code clean-ups
