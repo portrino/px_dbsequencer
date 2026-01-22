@@ -1,5 +1,8 @@
 # PxDbsequencer Changelog
 
+#### 2026-01-22 (Branch: typo3-v14)
+* [TASK] updates DataHandler override/xclass to be compatible with TYPO3 >= v14.1.0
+
 13.1.3 - 2025-12-18
 -------------------
 * [TASK] updates DataHandler override to be compatible with TYPO3 v13.4.22

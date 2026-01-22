@@ -55,8 +55,6 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
      */
     public function process_datamap(): void
     {
-        $context = GeneralUtility::makeInstance(Context::class);
-
         $this->controlActiveElements();
         $this->registerElementsToBeDeleted();
         $this->datamap = $this->unsetElementsToBeDeleted($this->datamap);
@@ -213,14 +211,14 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     $fieldArray = $this->fillInFieldArray($table, $id, $fieldArray, $incomingFieldArray, $theRealPid, 'new', $tscPID);
                     // Setting system fields
                     if ($schema->hasCapability(TcaSchemaCapability::CreatedAt)) {
-                        $fieldArray[$schema->getCapability(TcaSchemaCapability::CreatedAt)->getFieldName()] = $context->getPropertyFromAspect('date', 'timestamp');
+                        $fieldArray[$schema->getCapability(TcaSchemaCapability::CreatedAt)->getFieldName()] = $GLOBALS['EXEC_TIME'];
                     }
                     // Set stage to "Editing" to make sure we restart the workflow
                     if ($schema->isWorkspaceAware()) {
                         $fieldArray['t3ver_stage'] = 0;
                     }
                     if ($schema->hasCapability(TcaSchemaCapability::UpdatedAt) && !empty($fieldArray)) {
-                        $fieldArray[$schema->getCapability(TcaSchemaCapability::UpdatedAt)->getFieldName()] = $context->getPropertyFromAspect('date', 'timestamp');
+                        $fieldArray[$schema->getCapability(TcaSchemaCapability::UpdatedAt)->getFieldName()] = $GLOBALS['EXEC_TIME'];
                     }
                     foreach ($hookObjectsArr as $hookObj) {
                         if (method_exists($hookObj, 'processDatamap_postProcessFieldArray')) {
@@ -362,7 +360,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     // Removing fields which are equal to the current value:
                     $fieldArray = $this->compareFieldArrayWithCurrentAndUnset($table, $id, $fieldArray);
                     if ($schema->hasCapability(TcaSchemaCapability::UpdatedAt) && !empty($fieldArray)) {
-                        $fieldArray[$schema->getCapability(TcaSchemaCapability::UpdatedAt)->getFieldName()] = $context->getPropertyFromAspect('date', 'timestamp');
+                        $fieldArray[$schema->getCapability(TcaSchemaCapability::UpdatedAt)->getFieldName()] = $GLOBALS['EXEC_TIME'];
                     }
                     foreach ($hookObjectsArr as $hookObj) {
                         if (method_exists($hookObj, 'processDatamap_postProcessFieldArray')) {
@@ -416,9 +414,8 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
      * @param array $fieldArray Array of field=>value pairs to insert. FIELDS MUST MATCH the database FIELDS. No check is done. "pid" must point to the destination of the record!
      * @param int $suggestedUid Suggested UID value for the inserted record. See the array $this->suggestedInsertUids; Admin-only feature
      * @return int|null Returns ID on success.
-     * @internal should only be used from within DataHandler
      */
-    public function insertDB($table, $id, $fieldArray, $suggestedUid = 0): ?int
+    protected function insertDB($table, $id, $fieldArray, $suggestedUid = 0): ?int
     {
         $tcaSchemaFactory = GeneralUtility::makeInstance(TcaSchemaFactory::class);
         if (!is_array($fieldArray) || !$tcaSchemaFactory->has($table) || !isset($fieldArray['pid'])) {
