@@ -13,7 +13,6 @@ use Doctrine\DBAL\Exception as DBALException;
 use Portrino\PxDbsequencer\Hook\DataHandlerHook;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\DataHandling\Localization\DataMapProcessor;
 use TYPO3\CMS\Core\DataHandling\PagePermissionAssembler;
