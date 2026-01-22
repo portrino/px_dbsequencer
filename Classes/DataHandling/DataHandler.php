@@ -38,7 +38,6 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
      * PROCESSING DATA
      *
      *********************************************/
-
     /**
      * Processing the data-array
      * Call this function to process the data-array set by start()
@@ -108,6 +107,10 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 foreach ($hookObjectsArr as $hookObj) {
                     if (method_exists($hookObj, 'processDatamap_preProcessFieldArray')) {
                         $hookObj->processDatamap_preProcessFieldArray($incomingFieldArray, $table, $id, $this);
+                        // in case hook invalidated `$incomingFieldArray`, skip the record completely
+                        if (!is_array($incomingFieldArray)) {
+                            continue 2;
+                        }
                     }
                 }
                 // ******************************
@@ -172,7 +175,19 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                 $createNewVersion = true;
                             } else {
                                 $recordAccess = false;
-                                $this->log($table, 0, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'Record could not be created in this workspace');
+                                $this->log(
+                                    $table,
+                                    0,
+                                    SystemLogDatabaseAction::VERSIONIZE,
+                                    0,
+                                    SystemLogErrorClassification::USER_ERROR,
+                                    'Attempt to insert version record "{table}:{uid}" to this workspace failed. "Live" edit permissions of records from tables without versioning required',
+                                    -1,
+                                    [
+                                        'table' => $table,
+                                        'uid' => $id,
+                                    ]
+                                );
                             }
                         }
                     }
@@ -247,10 +262,36 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                                     $id = $this->autoVersionIdMap[$table][$id];
                                     $recordAccess = true;
                                 } else {
-                                    $this->log($table, $id, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'Could not be edited in offline workspace in the branch where found ({reason}). Auto-creation of version failed', -1, ['reason' => $errorCode]);
+                                    $this->log(
+                                        $table,
+                                        $id,
+                                        SystemLogDatabaseAction::VERSIONIZE,
+                                        0,
+                                        SystemLogErrorClassification::USER_ERROR,
+                                        'Attempt to version record "{table}:{uid}" failed [{reason}]',
+                                        -1,
+                                        [
+                                            'reason' => $errorCode,
+                                            'table' => $table,
+                                            'uid' => $id,
+                                        ]
+                                    );
                                 }
                             } else {
-                                $this->log($table, $id, SystemLogDatabaseAction::VERSIONIZE, 0, SystemLogErrorClassification::USER_ERROR, 'Could not be edited in offline workspace in the branch where found ({reason}). Auto-creation of version not allowed in workspace', -1, ['reason' => $errorCode]);
+                                $this->log(
+                                    $table,
+                                    $id,
+                                    SystemLogDatabaseAction::VERSIONIZE,
+                                    0,
+                                    SystemLogErrorClassification::USER_ERROR,
+                                    'Attempt to version record "{table}:{uid}" failed [{reason}]. "Live" edit permissions of records from tables without versioning required',
+                                    -1,
+                                    [
+                                        'reason' => $errorCode,
+                                        'table' => $table,
+                                        'uid' => $id,
+                                    ]
+                                );
                             }
                         }
                     }
@@ -293,16 +334,17 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     if ($GLOBALS['TCA'][$table]['ctrl']['crdate'] ?? false) {
                         $fieldArray[$GLOBALS['TCA'][$table]['ctrl']['crdate']] = $GLOBALS['EXEC_TIME'];
                     }
-                } elseif ($this->checkSimilar) {
+                }
+                // Set stage to "Editing" to make sure we restart the workflow
+                if (BackendUtility::isTableWorkspaceEnabled($table)) {
+                    $fieldArray['t3ver_stage'] = 0;
+                }
+                if ($status !== 'new') {
                     // Removing fields which are equal to the current value:
                     $fieldArray = $this->compareFieldArrayWithCurrentAndUnset($table, $id, $fieldArray);
                 }
                 if (($GLOBALS['TCA'][$table]['ctrl']['tstamp'] ?? false) && !empty($fieldArray)) {
                     $fieldArray[$GLOBALS['TCA'][$table]['ctrl']['tstamp']] = $GLOBALS['EXEC_TIME'];
-                }
-                // Set stage to "Editing" to make sure we restart the workflow
-                if (BackendUtility::isTableWorkspaceEnabled($table)) {
-                    $fieldArray['t3ver_stage'] = 0;
                 }
                 // Hook: processDatamap_postProcessFieldArray
                 foreach ($hookObjectsArr as $hookObj) {
@@ -346,8 +388,8 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         }
                     } else {
                         if ($table === 'pages') {
-                            // only a certain number of fields needs to be checked for updates
-                            // if $this->checkSimilar is TRUE, fields with unchanged values are already removed here
+                            // Only a certain number of fields needs to be checked for updates,
+                            // fields with unchanged values are already removed here.
                             $fieldsToCheck = array_intersect($this->pagetreeRefreshFieldsFromPages, array_keys($fieldArray));
                             if (!empty($fieldsToCheck)) {
                                 $this->pagetreeNeedsRefresh = true;
@@ -403,6 +445,9 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 // This feature is used by the import functionality to force a new record to have a certain UID value.
                 // This is only recommended for use when the destination server is a passive mirror of another server.
                 // As a security measure this feature is available only for Admin Users (for now)
+                // The value of $this->suggestedInsertUids["table":"uid"] is either string 'DELETE' (ext:impexp) to trigger
+                // a blind delete of any possibly existing row before insert with forced uid, or boolean true (testing-framework)
+                // to only force the uid insert and skipping deletion of an existing row.
                 $suggestedUid = (int)$suggestedUid;
                 //
                 // PxDbSequencer: use uid from hook
@@ -413,7 +458,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                 //
                 // PxDbSequencer: enable for non admins, to use sequencing for all BE Users: we remove $this->BE_USER->isAdmin()
                 //
-                if ($suggestedUid && $this->suggestedInsertUids[$table . ':' . $suggestedUid]) {
+                if ($suggestedUid && ($this->suggestedInsertUids[$table . ':' . $suggestedUid] ?? false)) {
                     // When the value of ->suggestedInsertUids[...] is "DELETE" it will try to remove the previous record
                     if ($this->suggestedInsertUids[$table . ':' . $suggestedUid] === 'DELETE') {
                         $this->hardDeleteSingleRecord($table, (int)$suggestedUid);
@@ -427,7 +472,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     // Execute the INSERT query:
                     $connection->insert($table, $fieldArray);
                 } catch (DBALException $e) {
-                    $insertErrorMessage = $e->getPrevious()->getMessage();
+                    $insertErrorMessage = $e->getMessage();
                 }
                 // If succees, do...:
                 if ($insertErrorMessage === '') {
