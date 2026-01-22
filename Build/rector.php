@@ -17,6 +17,9 @@ return RectorConfig::configure()
         dirname(__DIR__),
     ])
     ->withSkip([
+        DateTimeAspectInsteadOfGlobalsExecTimeRector::class => [
+            dirname(__DIR__) . '/Classes/DataHandling/DataHandler.php',
+        ],
         GeneralUtilityMakeInstanceToConstructorPropertyRector::class => [
             dirname(__DIR__) . '/Classes/DataHandling/DataHandler.php',
         ],
