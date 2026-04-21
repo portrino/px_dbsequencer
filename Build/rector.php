@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\ClassMethod\AddVoidReturnTypeWhereNoReturnRector;
 use Rector\ValueObject\PhpVersion;
-use Ssch\TYPO3Rector\CodeQuality\General\ConvertImplicitVariablesToExplicitGlobalsRector;
 use Ssch\TYPO3Rector\CodeQuality\General\ExtEmConfRector;
 use Ssch\TYPO3Rector\CodeQuality\General\GeneralUtilityMakeInstanceToConstructorPropertyRector;
 use Ssch\TYPO3Rector\Configuration\Typo3Option;
@@ -15,7 +14,11 @@ use Ssch\TYPO3Rector\TYPO311\v0\DateTimeAspectInsteadOfGlobalsExecTimeRector;
 
 return RectorConfig::configure()
     ->withPaths([
-        dirname(__DIR__),
+        dirname(__DIR__) . '/Build/',
+        dirname(__DIR__) . '/Classes/',
+        dirname(__DIR__) . '/Configuration/',
+        dirname(__DIR__) . '/ext_emconf.php',
+        dirname(__DIR__) . '/ext_localconf.php',
     ])
     ->withSkip([
         DateTimeAspectInsteadOfGlobalsExecTimeRector::class => [
@@ -27,7 +30,7 @@ return RectorConfig::configure()
     ])
     //->withPhpSets()
     // uncomment to reach your current PHP version
-    ->withPhpVersion(PhpVersion::PHP_84)
+    ->withPhpVersion(PhpVersion::PHP_82)
     ->withSets([
         Typo3SetList::CODE_QUALITY,
         Typo3SetList::GENERAL,
@@ -39,11 +42,10 @@ return RectorConfig::configure()
     ])
     ->withRules([
         AddVoidReturnTypeWhereNoReturnRector::class,
-        ConvertImplicitVariablesToExplicitGlobalsRector::class,
     ])
     ->withConfiguredRule(ExtEmConfRector::class, [
         ExtEmConfRector::PHP_VERSION_CONSTRAINT => '8.2.0-8.5.99',
-        ExtEmConfRector::TYPO3_VERSION_CONSTRAINT => '14.0.0-14.3.99',
+        ExtEmConfRector::TYPO3_VERSION_CONSTRAINT => '14.3.0-14.3.99',
         ExtEmConfRector::ADDITIONAL_VALUES_TO_BE_REMOVED => [],
     ])
 ;
