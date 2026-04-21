@@ -68,7 +68,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
             $hookObjectsArr[] = $hookObject;
         }
 
-        $this->datamap = DataMapProcessor::instance($this->datamap, $this->BE_USER, $this->referenceIndexUpdater)->process();
+        $this->datamap = GeneralUtility::makeInstance(DataMapProcessor::class)->process($this->datamap, $this->BE_USER, $this->referenceIndexUpdater);
         $registerDBList = [];
         $orderOfTables = [];
         if (isset($this->datamap['pages'])) {
@@ -105,7 +105,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                     if (method_exists($hookObj, 'processDatamap_preProcessFieldArray')) {
                         $hookObj->processDatamap_preProcessFieldArray($incomingFieldArray, $table, $id, $this);
                         // If a hook invalidated $incomingFieldArray, skip the record completely
-                        if (!is_array($incomingFieldArray)) {
+                        if (!is_array($incomingFieldArray)) { // @phpstan-ignore function.alreadyNarrowedType (hook may modify variable type by reference)
                             continue 2;
                         }
                     }
@@ -174,8 +174,9 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         }
                     }
                     $incomingFieldArray = $this->addDefaultPermittedLanguageIfNotSet($table, $incomingFieldArray, $theRealPid);
-                    if (!$this->BE_USER->recordEditAccessInternals($table, $incomingFieldArray, true)) {
-                        $this->log($table, 0, SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::USER_ERROR, 'recordEditAccessInternals() check failed [{reason}]', null, ['reason' => $this->BE_USER->errorMsg]);
+                    $accessResult = $this->BE_USER->checkRecordEditAccess($table, $incomingFieldArray, true);
+                    if (!$accessResult->isAllowed) {
+                        $this->log($table, 0, SystemLogDatabaseAction::INSERT, null, SystemLogErrorClassification::USER_ERROR, 'checkRecordEditAccess() check failed [{reason}]', null, ['reason' => $accessResult->errorMessage]);
                         continue;
                     }
                     if (!$this->BE_USER->workspaceAllowsLiveEditingInTable($table)) {
@@ -189,14 +190,14 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         }
                     }
                     // Here the "pid" is set IF NOT the old pid was a string pointing to a place in the subst-id array.
-                    [$tscPID] = BackendUtility::getTSCpid($table, $id, $old_pid_value ?: ($fieldArray['pid'] ?? 0));
+                    $tscPID = (int)BackendUtility::getRealPageId($table, $id, $old_pid_value ?: ($fieldArray['pid'] ?? 0));
                     // Apply TCA defaults from pageTS
-                    $fieldArray = $this->applyDefaultsForFieldArray($table, (int)$tscPID, $fieldArray, $incomingFieldArray);
+                    $fieldArray = $this->applyDefaultsForFieldArray($table, $tscPID, $fieldArray, $incomingFieldArray);
                     // Apply page permissions as well
                     if ($table === 'pages') {
                         $fieldArray = GeneralUtility::makeInstance(PagePermissionAssembler::class)->applyDefaults(
                             $fieldArray,
-                            (int)$tscPID,
+                            $tscPID,
                             (int)$this->BE_USER->getUserId(),
                             (int)$this->BE_USER->firstMainGroup
                         );
@@ -292,8 +293,9 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record {table}:{uid} without permission or non-existing page', null, ['table' => $table, 'uid' => $id], (int)$currentRecord['pid']);
                         continue;
                     }
-                    if (!$this->BE_USER->recordEditAccessInternals($table, $currentRecord)) {
-                        $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record {table}:{uid} failed with: {reason}', null, ['table' => $table, 'uid' => $id, 'reason' => $this->BE_USER->errorMsg]);
+                    $accessResult = $this->BE_USER->checkRecordEditAccess($table, $currentRecord);
+                    if (!$accessResult->isAllowed) {
+                        $this->log($table, $id, SystemLogDatabaseAction::UPDATE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to modify record {table}:{uid} failed with: {reason}', null, ['table' => $table, 'uid' => $id, 'reason' => $accessResult->errorMessage]);
                         continue;
                     }
                     // Use the new id of the versioned record we're trying to write to.
@@ -349,7 +351,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
                         }
                     }
                     // Here the "pid" is set IF NOT the old pid was a string pointing to a place in the subst-id array.
-                    [$tscPID] = BackendUtility::getTSCpid($table, $id, 0);
+                    $tscPID = (int)BackendUtility::getRealPageId($table, $id, 0);
                     // Processing of all fields in incomingFieldArray and setting them in $fieldArray
                     $fieldArray = $this->fillInFieldArray($table, $id, $fieldArray, $incomingFieldArray, (int)$currentRecord['pid'], 'update', $tscPID);
                     // Set stage to "Editing" to make sure we restart the workflow
@@ -417,7 +419,7 @@ class DataHandler extends \TYPO3\CMS\Core\DataHandling\DataHandler
     protected function insertDB($table, $id, $fieldArray, $suggestedUid = 0): ?int
     {
         $tcaSchemaFactory = GeneralUtility::makeInstance(TcaSchemaFactory::class);
-        if (!is_array($fieldArray) || !$tcaSchemaFactory->has($table) || !isset($fieldArray['pid'])) {
+        if (!$tcaSchemaFactory->has($table) || !isset($fieldArray['pid'])) {
             return null;
         }
         // Do NOT insert the UID field, ever!
