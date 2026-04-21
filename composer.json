@@ -17,21 +17,23 @@
         "source": "https://github.com/portrino/px_dbsequencer/"
     },
     "require": {
-        "php": "^8.2",
-        "typo3/cms-backend": "^13.4.22"
+        "php": ">=8.2 <=8.5.99",
+        "typo3/cms-backend": "^14.3"
     },
     "require-dev": {
-        "ergebnis/composer-normalize": "^2.44",
-        "friendsofphp/php-cs-fixer": "^3.64",
-        "helmich/typo3-typoscript-lint": "^3.1",
+        "ergebnis/composer-normalize": "^2.51",
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "helmich/typo3-typoscript-lint": "^3.3",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
         "seld/jsonlint": "^1.11",
-        "spaze/phpstan-disallowed-calls": "^4.0",
-        "ssch/typo3-rector": "^3.0",
-        "tomasvotruba/cognitive-complexity": "^1.0",
-        "tomasvotruba/type-coverage": "^2.0",
+        "spaze/phpstan-disallowed-calls": "^4.11",
+        "ssch/typo3-rector": "^3.14",
+        "tomasvotruba/cognitive-complexity": "^1.1",
+        "tomasvotruba/type-coverage": "^2.1",
+        "typo3/cms-fluid": "^14.3",
+        "typo3/cms-frontend": "^14.3",
         "typo3/coding-standards": "^0.8"
     },
     "replace": {
@@ -57,12 +59,14 @@
             "typo3/cms-composer-installers": true
         },
         "bin-dir": ".Build/bin",
+        "lock": false,
+        "preferred-install": {
+            "*": "dist"
+        },
         "vendor-dir": ".Build/vendor"
     },
     "extra": {
         "typo3/cms": {
-            "app-dir": ".Build",
-            "cms-package-dir": "{$vendor-dir}/typo3/cms",
             "extension-key": "px_dbsequencer",
             "web-dir": ".Build/web"
         }
