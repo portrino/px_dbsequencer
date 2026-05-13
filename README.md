@@ -4,7 +4,7 @@
 [![TYPO3 14](https://img.shields.io/badge/TYPO3-14-orange.svg?logo=typo3)](https://get.typo3.org/version/14)
 [![Total Downloads](https://poser.pugx.org/portrino/px_dbsequencer/downloads)](https://packagist.org/packages/portrino/px_dbsequencer)
 [![Monthly Downloads](https://poser.pugx.org/portrino/px_dbsequencer/d/monthly)](https://packagist.org/packages/portrino/px_dbsequencer)
-[![CI](https://github.com/portrino/px_dbsequencer/actions/workflows/ci.yml/badge.svg)](https://github.com/portrino/px_dbsequencer/actions/workflows/ci.yml)
+[![CI](https://github.com/portrino/px_dbsequencer/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/portrino/px_dbsequencer/actions/workflows/ci.yml)
 
 > Database Sequencer for TYPO3
 
@@ -111,8 +111,8 @@ switch ($applicationContext[0]) {
 |---------------|-------|-----------|--------------------------------------|
 | 14.x          | 14.x  | 8.2 - 8.5 | features, bugfixes, security updates | 
 | 13.x          | 13.4  | 8.2 - 8.3 | features, bugfixes, security updates | 
-| 0.12.x        | 12.4  | 8.1 - 8.2 | features, bugfixes, security updates | 
-| 0.11.x        | 11.5  | 7.4 - 8.1 | bugfixes, security updates           |
+| 0.12.x        | 12.4  | 8.1 - 8.2 | bugfixes, security updates           | 
+| 0.11.x        | 11.5  | 7.4 - 8.1 | none                                 |
 | 0.10.x        | 10.4  | 7.2 - 7.4 | none                                 |
 | 0.9.x         | 9.5   | 7.2 - 7.4 | none                                 |
 | 0.7.x         | 8.7   | 7.0 - 7.4 | none                                 |
